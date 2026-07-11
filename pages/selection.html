@@ -7,62 +7,107 @@
   <style>
     :root{--bg1:#8ea6b3;--bg2:#6f8794;--card:#111111f0;--line:rgba(255,255,255,.10);--text:#f5f1ea;--shadow:0 24px 70px rgba(0,0,0,.35)}
     *{box-sizing:border-box}
-    body{margin:0;min-height:100vh;font-family:Inter,system-ui,Arial,sans-serif;color:var(--text);background:linear-gradient(180deg,rgba(20,28,34,.18),rgba(20,28,34,.42)),radial-gradient(circle at 50% 20%,rgba(255,255,255,.24),transparent 28%),linear-gradient(135deg,var(--bg1),var(--bg2));overflow-x:auto}
+    body{margin:0;min-height:100vh;font-family:Inter,system-ui,Arial,sans-serif;color:var(--text);background:linear-gradient(180deg,rgba(20,28,34,.18),rgba(20,28,34,.42)),radial-gradient(circle at 50% 20%,rgba(255,255,255,.24),transparent 28%),linear-gradient(135deg,var(--bg1),var(--bg2));overflow-x:hidden}
     .page{min-height:100vh;padding:20px}
     .shell{min-height:calc(100vh - 40px);position:relative;overflow:hidden;border-radius:28px;box-shadow:var(--shadow)}
-    .topbar{position:absolute;left:0;right:0;top:0;z-index:5;display:flex;justify-content:space-between;align-items:center;padding:16px 20px}
-    .brand{font-size:14px;letter-spacing:.08em;opacity:.9}
+
+    /* ── topbar ── */
+    .topbar{position:absolute;left:0;right:0;top:0;z-index:5;display:flex;justify-content:space-between;align-items:center;padding:12px 24px;min-height:72px;background:rgba(0,0,0,.18);backdrop-filter:blur(6px)}
+    .brand img{height:48px;width:auto;display:block}
     .switch{display:flex;gap:4px;padding:4px;border-radius:999px;background:rgba(255,255,255,.10)}
     .switch button{border:0;background:transparent;color:var(--text);opacity:.72;font-size:12px;font-weight:700;padding:7px 12px;border-radius:999px;cursor:pointer}
     .switch button.active{background:rgba(255,255,255,.18);opacity:1}
-    .hero{min-height:calc(100vh - 40px);padding:74px 80px 24px;display:flex;align-items:center;justify-content:center}
-    .cards{position:relative;width:100%;max-width:2100px;height:760px}
-    .card{position:absolute;width:190px;height:465px;background:var(--card);border:1px solid var(--line);box-shadow:0 16px 45px rgba(0,0,0,.22);overflow:hidden;cursor:pointer;transition:transform .2s ease}
-    .card:hover{transform:translateY(-6px)}
-    .card::before{content:"";position:absolute;inset:0;background:inherit;filter:blur(18px);transform:scale(1.15);z-index:0}
-    .card::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg, rgba(0,0,0,.12), rgba(0,0,0,.34));z-index:1}
+
+    /* ── hero / cards ── */
+    .hero{min-height:calc(100vh - 40px);padding:88px 40px 32px;display:flex;align-items:center;justify-content:center;overflow-x:auto}
+    .cards{position:relative;width:max(100%,1760px);height:720px;flex-shrink:0}
+
+    /* base card */
+    .card{position:absolute;width:190px;height:465px;background:var(--card);border:1px solid var(--line);box-shadow:0 16px 45px rgba(0,0,0,.22);overflow:hidden;cursor:pointer;transition:transform .2s ease,box-shadow .2s ease;border-radius:14px}
+    .card:hover{transform:translateY(-8px);box-shadow:0 28px 60px rgba(0,0,0,.38)}
+    .card::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.08),rgba(0,0,0,.32));z-index:1}
     .card > *{position:relative;z-index:2}
+
     .word{display:flex;align-items:flex-start;justify-content:center;padding:72px 10px 0;font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:1.65rem;line-height:.96;text-align:center;text-wrap:balance}
-    .c1{left:20px; top:130px}
-    .c2{left:380px; top:40px}
-    .c3{left:760px; top:-10px}
-    .c4{left:1140px; top:55px}
-    .c5{left:1520px; top:5px}
+
+    /* card positions — evenly spaced inside 1760px wide container */
+    .c1{left:20px;  top:130px}
+    .c2{left:350px; top:45px}
+    .c3{left:680px; top:0px}
+    .c4{left:1010px;top:55px}
+    .c5{left:1340px;top:10px}
+
+    /* card 5 background image */
     .c5{background-image:url("../assets/images/traitement.jpeg");background-size:cover;background-position:center}
-    @media (max-width: 1200px){body{overflow-x:auto}.hero{padding:74px 24px 24px}.cards{width:2200px}}
+
+    /* coming-soon ribbon */
+    .soon-badge{display:none;position:absolute;bottom:16px;left:50%;transform:translateX(-50%);white-space:nowrap;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.28);backdrop-filter:blur(4px);border-radius:999px;padding:4px 12px;font-size:11px;font-weight:700;letter-spacing:.05em;color:rgba(255,255,255,.85);z-index:3}
+    .card.soon .soon-badge{display:block}
+    .card.soon{cursor:default}
+    .card.soon:hover{transform:none;box-shadow:0 16px 45px rgba(0,0,0,.22)}
   </style>
 </head>
 <body>
   <div class="page">
     <div class="shell">
       <div class="topbar">
-        <div class="brand"><img src="../assets/images/logo.png" alt="OrAgri" style="height:136px; width:auto; display:block;"></div>
-        <div class="switch" aria-label="Language switch"><button class="active" data-lang="fr">FR</button><button data-lang="ar">عربية</button></div>
+        <div class="brand"><img src="../assets/images/logo.png" alt="OrAgri"></div>
+        <div class="switch" aria-label="Language switch">
+          <button class="active" data-lang="fr">FR</button>
+          <button data-lang="ar">عربية</button>
+        </div>
       </div>
       <main class="hero">
         <section class="cards" aria-label="OrAgri modules">
-          <article class="card c1" data-module="economie"><div class="word" data-fr="Économie" data-ar="الإقتصاد">Économie</div></article>
-          <article class="card c2" data-module="culture"><div class="word" data-fr="Culture" data-ar="المزروعات">Culture</div></article>
-          <article class="card c3" data-module="irrigation"><div class="word" data-fr="Irrigation" data-ar="السقي">Irrigation</div></article>
-          <article class="card c4" data-module="fertilisation"><div class="word" data-fr="Fertilisation" data-ar="التسميد">Fertilisation</div></article>
-          <article class="card c5" data-module="traitement"><div class="word" data-fr="Traitement phytosanitaire" data-ar="معالجة الآفات">Traitement phytosanitaire</div></article>
+          <article class="card c1 soon" data-module="economie">
+            <div class="word" data-fr="Économie" data-ar="الإقتصاد">Économie</div>
+            <span class="soon-badge" data-fr="Bientôt disponible" data-ar="قريباً">Bientôt disponible</span>
+          </article>
+          <article class="card c2" data-module="culture">
+            <div class="word" data-fr="Culture" data-ar="المزروعات">Culture</div>
+          </article>
+          <article class="card c3 soon" data-module="irrigation">
+            <div class="word" data-fr="Irrigation" data-ar="السقي">Irrigation</div>
+            <span class="soon-badge" data-fr="Bientôt disponible" data-ar="قريباً">Bientôt disponible</span>
+          </article>
+          <article class="card c4 soon" data-module="fertilisation">
+            <div class="word" data-fr="Fertilisation" data-ar="التسميد">Fertilisation</div>
+            <span class="soon-badge" data-fr="Bientôt disponible" data-ar="قريباً">Bientôt disponible</span>
+          </article>
+          <article class="card c5 soon" data-module="traitement">
+            <div class="word" data-fr="Traitement phytosanitaire" data-ar="معالجة الآفات">Traitement phytosanitaire</div>
+            <span class="soon-badge" data-fr="Bientôt disponible" data-ar="قريباً">Bientôt disponible</span>
+          </article>
         </section>
       </main>
     </div>
   </div>
   <script>
-    const buttons=document.querySelectorAll('.switch button');
-    const words=document.querySelectorAll('.word');
-    function applyLang(lang){document.documentElement.lang=lang;document.documentElement.dir=lang==='ar'?'rtl':'ltr';words.forEach(el=>el.textContent=lang==='ar'?el.dataset.ar:el.dataset.fr);buttons.forEach(btn=>btn.classList.toggle('active',btn.dataset.lang===lang))}
-    buttons.forEach(btn=>btn.addEventListener('click',()=>applyLang(btn.dataset.lang)));
-    applyLang('fr');
+    const buttons = document.querySelectorAll('.switch button');
+    const words   = document.querySelectorAll('[data-fr]');
 
-    document.querySelectorAll('.card').forEach(card=>{
-      card.addEventListener('click',()=>{
-        const module=card.dataset.module;
-        window.location.href = module + '.html';
+    function applyLang(lang) {
+      document.documentElement.lang = lang;
+      document.documentElement.dir  = lang === 'ar' ? 'rtl' : 'ltr';
+      words.forEach(el => el.textContent = lang === 'ar' ? el.dataset.ar : el.dataset.fr);
+      buttons.forEach(btn => btn.classList.toggle('active', btn.dataset.lang === lang));
+    }
+
+    buttons.forEach(btn => btn.addEventListener('click', () => {
+      const l = btn.dataset.lang;
+      localStorage.setItem('oragri-lang', l);
+      applyLang(l);
+    }));
+
+    // Only navigate for cards that are NOT "soon"
+    document.querySelectorAll('.card:not(.soon)').forEach(card => {
+      card.addEventListener('click', () => {
+        window.location.href = card.dataset.module + '.html';
       });
     });
+
+    // Restore saved language
+    applyLang(localStorage.getItem('oragri-lang') || 'fr');
   </script>
 </body>
 </html>
