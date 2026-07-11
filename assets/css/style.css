@@ -1,0 +1,29 @@
+/* OrAgri — Styles globaux */
+/* Palette : noir, blanc, rose */
+
+:root {
+  --color-bg: #0a0a0a;
+  --color-surface: #1a1a1a;
+  --color-primary: #e75480;
+  --color-text: #f5f5f5;
+  --color-muted: #888888;
+  --font-main: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-main);
+  min-height: 100vh;
+}
+
+/* RTL support */
+[dir="rtl"] {
+  text-align: right;
+}
