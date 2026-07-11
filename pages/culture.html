@@ -1,16 +1,863 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" dir="ltr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>OrAgri — Culture</title>
-  <link rel="stylesheet" href="../assets/css/style.css" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OrAgri — Module 1 : Sélection Culture</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface2: #22263a;
+    --border: #2e3350;
+    --accent: #4ade80;
+    --accent2: #38bdf8;
+    --warn: #fbbf24;
+    --danger: #f87171;
+    --text: #e2e8f0;
+    --text2: #94a3b8;
+    --radius: 12px;
+    --radius-sm: 8px;
+    --shadow: 0 4px 24px rgba(0,0,0,0.4);
+  }
+  [data-theme="light"] {
+    --bg: #f1f5f9;
+    --surface: #ffffff;
+    --surface2: #f8fafc;
+    --border: #e2e8f0;
+    --text: #0f172a;
+    --text2: #64748b;
+    --shadow: 0 4px 24px rgba(0,0,0,0.08);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    font-size: 15px;
+    min-height: 100vh;
+    transition: background 0.3s, color 0.3s;
+  }
+  body[dir="rtl"] { font-family: 'Segoe UI', 'Noto Sans Arabic', system-ui, sans-serif; }
+
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 20px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 100;
+    box-shadow: var(--shadow);
+  }
+  .logo { display: flex; align-items: center; }
+  .logo span { color: var(--accent2); }
+  .topbar-right { display: flex; gap: 10px; align-items: center; }
+  .btn-toggle {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 6px 14px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    transition: all 0.2s;
+  }
+  .btn-toggle:hover { background: var(--border); }
+  .btn-toggle.active { background: var(--accent); color: #0f1117; border-color: var(--accent); }
+
+  .hero { padding: 32px 20px 20px; text-align: center; }
+  .hero h1 { font-size: clamp(22px,5vw,32px); font-weight: 800; margin-bottom: 8px; }
+  .hero p { color: var(--text2); font-size: 14px; max-width: 500px; margin: 0 auto; }
+  .module-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 12px;
+    color: var(--accent);
+    font-weight: 600;
+    margin-bottom: 14px;
+  }
+
+  .main { padding: 0 16px 40px; max-width: 860px; margin: 0 auto; }
+
+  .step-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow);
+  }
+  .step-header { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+  .step-num {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #0f1117;
+    font-weight: 800; font-size: 13px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .step-num.done { background: var(--accent2); }
+  .step-title { font-weight: 700; font-size: 16px; }
+  .step-sub { font-size: 12px; color: var(--text2); margin-top: 1px; }
+
+  .culture-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px,1fr));
+    gap: 10px;
+  }
+  .culture-btn {
+    background: var(--surface2);
+    border: 2px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 14px 10px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: var(--text);
+  }
+  .culture-btn:hover { border-color: var(--accent2); background: var(--surface); }
+  .culture-btn.selected { border-color: var(--accent); background: rgba(74,222,128,0.08); }
+  .culture-btn .icon { font-size: 28px; margin-bottom: 6px; }
+  .culture-btn .name { font-size: 12px; font-weight: 700; }
+
+  .region-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px,1fr));
+    gap: 8px;
+  }
+  .region-btn {
+    background: var(--surface2);
+    border: 2px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: var(--text);
+    text-align: start;
+  }
+  .region-btn:hover { border-color: var(--accent2); }
+  .region-btn.selected { border-color: var(--accent2); background: rgba(56,189,248,0.08); }
+  .region-btn .r-name { font-size: 13px; font-weight: 700; }
+  .region-btn .r-alt { font-size: 11px; color: var(--text2); }
+  .region-btn .r-clim { font-size: 10px; color: var(--accent); margin-top: 2px; }
+
+  #results { display: none; }
+  .results-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 14px; flex-wrap: wrap; gap: 8px;
+  }
+  .results-title { font-size: 18px; font-weight: 800; }
+  .results-count {
+    background: var(--accent);
+    color: #0f1117;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .variety-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 12px;
+    box-shadow: var(--shadow);
+    cursor: pointer;
+    transition: border-color 0.2s;
+  }
+  .variety-card:hover { border-color: var(--accent2); }
+  .variety-card.expanded { border-color: var(--accent); }
+  .vc-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+  .vc-name { font-size: 16px; font-weight: 800; }
+  .vc-ar { font-size: 13px; color: var(--text2); margin-top: 2px; }
+  .vc-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
+  .tag {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 9px; border-radius: 20px;
+    font-size: 11px; font-weight: 600;
+  }
+  .tag-green { background: rgba(74,222,128,0.15); color: var(--accent); border: 1px solid rgba(74,222,128,0.3); }
+  .tag-blue  { background: rgba(56,189,248,0.15); color: var(--accent2); border: 1px solid rgba(56,189,248,0.3); }
+  .tag-warn  { background: rgba(251,191,36,0.15);  color: var(--warn);   border: 1px solid rgba(251,191,36,0.3); }
+  .tag-danger{ background: rgba(248,113,113,0.15); color: var(--danger); border: 1px solid rgba(248,113,113,0.3); }
+
+  .vc-roi { font-size: 20px; font-weight: 900; color: var(--accent); white-space: nowrap; }
+  .vc-roi-label { font-size: 10px; color: var(--text2); text-align: end; }
+
+  .vc-detail {
+    display: none;
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+  }
+  .variety-card.expanded .vc-detail { display: block; }
+  .detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  @media(min-width:600px){ .detail-grid { grid-template-columns: repeat(3,1fr); } }
+  .dg-item { background: var(--surface2); border-radius: var(--radius-sm); padding: 10px; }
+  .dg-label { font-size: 10px; color: var(--text2); margin-bottom: 3px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .dg-value { font-size: 14px; font-weight: 700; }
+  .dg-value.green { color: var(--accent); }
+  .dg-value.blue  { color: var(--accent2); }
+  .section-label { font-size: 11px; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: 0.8px; margin: 14px 0 6px; }
+
+  .compat-bar-wrap { margin-top: 6px; }
+  .compat-bar {
+    height: 6px; border-radius: 3px;
+    background: var(--border);
+    overflow: hidden;
+    margin-top: 4px;
+  }
+  .compat-fill {
+    height: 100%; border-radius: 3px;
+    transition: width 0.6s ease;
+  }
+
+  .empty { text-align: center; padding: 40px 20px; color: var(--text2); }
+  .empty .icon { font-size: 48px; margin-bottom: 10px; }
+
+  .loader { display: none; text-align: center; padding: 30px; color: var(--text2); }
+  .spinner {
+    width: 32px; height: 32px;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 10px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #0f1117;
+    border: none;
+    padding: 12px 24px;
+    border-radius: var(--radius-sm);
+    font-size: 15px;
+    font-weight: 800;
+    cursor: pointer;
+    width: 100%;
+    transition: opacity 0.2s;
+    margin-top: 8px;
+  }
+  .btn-primary:hover { opacity: 0.85; }
+  .btn-reset {
+    background: transparent;
+    color: var(--text2);
+    border: 1px solid var(--border);
+    padding: 8px 18px;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-reset:hover { border-color: var(--danger); color: var(--danger); }
+
+    .fam-filters{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;}
+    .fam-btn{padding:6px 14px;border-radius:20px;border:1.5px solid var(--border);background:transparent;color:var(--text);cursor:pointer;font-size:.8rem;transition:all .2s;}
+    .fam-btn.active{background:var(--primary);color:#fff;border-color:var(--primary);}
+    .fam-btn:hover:not(.active){background:var(--primary-20,rgba(74,222,128,.15));border-color:var(--primary);}
+    
+    .logo-img { height: 144px; width: auto; max-width: 280px; display: block; object-fit: contain; }
+  </style>
 </head>
-<body>
-  <!-- Module Culture — remplacer par votre fichier final -->
-  <div id="app">
-    <p>Module Culture...</p>
+<body data-theme="dark">
+
+<header class="topbar">
+  <div class="logo"><img src="logo.png" alt="OrAgri" class="logo-img" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><span class="logo-fallback" style="display:none">Or<span>Agri</span></span></div>
+  <div class="topbar-right">
+    <button class="btn-toggle" id="btnLang" onclick="toggleLang()">عربية</button>
+    <button class="btn-toggle" id="btnTheme" onclick="toggleTheme()">☀️</button>
   </div>
-  <script src="../assets/js/app.js"></script>
+</header>
+
+<div class="hero">
+  <div class="module-badge">🌱 <span data-i="mod1_badge">Module 1</span></div>
+  <h1 data-i="hero_title">Sélection Culture &amp; Compatibilité</h1>
+  <p data-i="hero_sub">Choisissez votre culture et votre région pour obtenir les variétés recommandées pour votre ferme.</p>
+</div>
+
+<main class="main">
+
+  <div class="step-card" id="step1">
+    <div class="step-header">
+      <div class="step-num" id="s1num">1</div>
+      <div>
+        <div class="step-title" data-i="s1_title">Quelle culture ?</div>
+        <div class="step-sub" data-i="s1_sub">Sélectionnez une culture arboricole</div>
+      </div>
+    </div>
+    <div class="culture-grid" id="cultureGrid"></div>
+  </div>
+
+  <div class="step-card" id="step2" style="opacity:0.4;pointer-events:none">
+    <div class="step-header">
+      <div class="step-num" id="s2num">2</div>
+      <div>
+        <div class="step-title" data-i="s2_title">Votre région ?</div>
+        <div class="step-sub" data-i="s2_sub">Sélectionnez la région de votre parcelle</div>
+      </div>
+    </div>
+    <div class="region-grid" id="regionGrid"></div>
+  </div>
+
+  <div class="step-card" id="step3" style="opacity:0.4;pointer-events:none">
+    <div class="step-header">
+      <div class="step-num" id="s3num">3</div>
+      <div>
+        <div class="step-title" data-i="s3_title">Paramètres optionnels</div>
+        <div class="step-sub" data-i="s3_sub">Affinez les résultats</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px">
+      <label style="display:flex;flex-direction:column;gap:4px;flex:1;min-width:130px">
+        <span style="font-size:12px;color:var(--text2)" data-i="f_alt">Altitude (m)</span>
+        <input id="fAlt" type="number" min="0" max="2500" placeholder="ex: 800"
+          style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:8px 10px;border-radius:var(--radius-sm);font-size:14px;">
+      </label>
+      <label style="display:flex;flex-direction:column;gap:4px;flex:1;min-width:130px">
+        <span style="font-size:12px;color:var(--text2)" data-i="f_pluv">Pluviométrie (mm/an)</span>
+        <input id="fPluv" type="number" min="0" max="2000" placeholder="ex: 400"
+          style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:8px 10px;border-radius:var(--radius-sm);font-size:14px;">
+      </label>
+      <label style="display:flex;flex-direction:column;gap:4px;flex:1;min-width:130px">
+        <span style="font-size:12px;color:var(--text2)" data-i="f_roi">ROI max (ans)</span>
+        <select id="fROI"
+          style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:8px 10px;border-radius:var(--radius-sm);font-size:14px;">
+          <option value="">—</option>
+          <option value="2">≤ 2 ans</option>
+          <option value="3">≤ 3 ans</option>
+          <option value="4">≤ 4 ans</option>
+          <option value="5">≤ 5 ans</option>
+        </select>
+      </label>
+    </div>
+    <button class="btn-primary" id="btnSearch" onclick="runSearch()" data-i="btn_search">🔍 Voir les variétés recommandées</button>
+  </div>
+
+  <div class="loader" id="loader">
+    <div class="spinner"></div>
+    <div data-i="loading">Analyse en cours…</div>
+  </div>
+
+  <div id="results">
+    <div class="results-header">
+      <div class="results-title" data-i="res_title">Variétés recommandées</div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <span class="results-count" id="resCount">0</span>
+        <button class="btn-reset" onclick="resetAll()" data-i="btn_reset">↩ Recommencer</button>
+      </div>
+    </div>
+    <div id="resultsList"></div>
+  </div>
+
+</main>
+
+<script>
+const i18n = {
+  fr: {
+    mod1_badge:"Module 1", hero_title:"Sélection Culture & Compatibilité",
+    hero_sub:"Choisissez votre culture et votre région pour obtenir les variétés recommandées.",
+    s1_title:"Quelle culture ?", s1_sub:"Sélectionnez une culture arboricole",
+    s2_title:"Votre région ?", s2_sub:"Sélectionnez la région de votre parcelle",
+    s3_title:"Paramètres optionnels", s3_sub:"Affinez les résultats",
+    f_alt:"Altitude (m)", f_pluv:"Pluviométrie (mm/an)", f_roi:"ROI max (ans)",
+    btn_search:"🔍 Voir les variétés recommandées",
+    loading:"Analyse en cours…", res_title:"Variétés recommandées",
+    btn_reset:"↩ Recommencer",
+    no_result:"Aucune variété trouvée pour ces critères.",
+    lbl_roi:"ROI", lbl_rdt:"Rendement", lbl_ca:"CA/ha",
+    lbl_eau:"Eau/an", lbl_azote:"N/an", lbl_alt:"Altitude",
+    lbl_gel:"Sensib. gel", lbl_sec:"Tolér. sécheresse",
+    lbl_rav:"Ravageurs", lbl_mal:"Maladies", lbl_trt:"Traitements",
+    lbl_sol:"Sol compatible", lbl_prix:"Prix vente",
+    lbl_pepiniere:"Pépinières", lbl_origine:"Origine",
+    lbl_conduite:"Conduite", lbl_notes:"Notes",
+    lbl_heuresfroid:"Heures de froid", lbl_pleine:"Pleine prod.",
+    compat_title:"Score compatibilité région"
+  },
+  ar: {
+    mod1_badge:"الوحدة 1", hero_title:"اختيار المحصول والتوافق",
+    hero_sub:"اختر محصولك ومنطقتك للحصول على الأصناف الموصى بها لمزرعتك.",
+    s1_title:"أي محصول؟", s1_sub:"اختر محصولاً من المحاصيل الشجرية",
+    s2_title:"منطقتك؟", s2_sub:"اختر المنطقة التي توجد فيها قطعتك",
+    s3_title:"معايير اختيارية", s3_sub:"حدد النتائج",
+    f_alt:"الارتفاع (م)", f_pluv:"التساقطات (مم/سنة)", f_roi:"أقصى مدة استرداد",
+    btn_search:"🔍 عرض الأصناف الموصى بها",
+    loading:"جارٍ التحليل…", res_title:"الأصناف الموصى بها",
+    btn_reset:"↩ البدء من جديد",
+    no_result:"لا يوجد صنف يناسب هذه المعايير.",
+    lbl_roi:"مدة الاسترداد", lbl_rdt:"المردودية", lbl_ca:"رقم الأعمال/هكتار",
+    lbl_eau:"الماء/سنة", lbl_azote:"آزوت/سنة", lbl_alt:"الارتفاع",
+    lbl_gel:"حساسية الصقيع", lbl_sec:"تحمل الجفاف",
+    lbl_rav:"الآفات", lbl_mal:"الأمراض", lbl_trt:"العلاجات",
+    lbl_sol:"التربة المناسبة", lbl_prix:"سعر البيع",
+    lbl_pepiniere:"المشاتل", lbl_origine:"الأصل",
+    lbl_conduite:"طريقة التربية", lbl_notes:"ملاحظات",
+    lbl_heuresfroid:"ساعات البرد", lbl_pleine:"إنتاج كامل",
+    compat_title:"درجة التوافق مع المنطقة"
+  }
+};
+let lang = localStorage.getItem('orAgriLang') || 'fr';
+function t(k){ return (i18n[lang]||i18n.fr)[k] || k; }
+function applyLang(){
+  document.querySelectorAll('[data-i]').forEach(el=>{ el.textContent = t(el.dataset.i); });
+  document.body.dir = lang==='ar' ? 'rtl' : 'ltr';
+  document.documentElement.lang = lang==='ar' ? 'ar' : 'fr';
+  document.getElementById('btnLang').textContent = lang==='ar' ? 'FR' : 'عربية';
+}
+function toggleLang(){
+  lang = lang==='fr' ? 'ar' : 'fr';
+  localStorage.setItem('orAgriLang', lang);
+  applyLang();
+  renderFamFilters();
+  renderCultures();
+  renderRegions();
+  if(document.getElementById('results').style.display!=='none') runSearch();
+}
+
+let theme = localStorage.getItem('orAgriTheme') || 'dark';
+document.body.dataset.theme = theme;
+function toggleTheme(){
+  theme = theme==='dark' ? 'light' : 'dark';
+  document.body.dataset.theme = theme;
+  localStorage.setItem('orAgriTheme', theme);
+  document.getElementById('btnTheme').textContent = theme==='dark' ? '☀️' : '🌙';
+}
+
+const CULTURES = [
+  /* ── ARBORICULTURE ─────────────────────────────────────────── */
+  { id:'Agrumes',          icon:'🍊', fam:'Arboriculture', fr:'Agrumes',           ar:'الحوامض',        minAlt:0,    maxAlt:600,  minPluv:350, minHF:0 },
+  { id:'Olivier',          icon:'🫒', fam:'Arboriculture', fr:'Olivier',           ar:'الزيتون',        minAlt:0,    maxAlt:1200, minPluv:200, minHF:0 },
+  { id:'Grenadier',        icon:'🌺', fam:'Arboriculture', fr:'Grenadier',         ar:'الرمان',         minAlt:0,    maxAlt:1200, minPluv:150, minHF:0 },
+  { id:'Pommier',          icon:'🍎', fam:'Arboriculture', fr:'Pommier',           ar:'التفاح',         minAlt:800,  maxAlt:2000, minPluv:600, minHF:800 },
+  { id:'Poirier',          icon:'🍐', fam:'Arboriculture', fr:'Poirier',           ar:'الإجاص',         minAlt:600,  maxAlt:1600, minPluv:600, minHF:900 },
+  { id:'Pêcher',           icon:'🍑', fam:'Arboriculture', fr:'Pêcher',            ar:'الخوخ',          minAlt:400,  maxAlt:1400, minPluv:500, minHF:600 },
+  { id:'Abricotier',       icon:'🟠', fam:'Arboriculture', fr:'Abricotier',        ar:'المشمش',         minAlt:200,  maxAlt:1200, minPluv:400, minHF:500 },
+  { id:'Cerisier',         icon:'🍒', fam:'Arboriculture', fr:'Cerisier',          ar:'الكراز',         minAlt:800,  maxAlt:2000, minPluv:700, minHF:1200 },
+  { id:'Amandier',         icon:'🌰', fam:'Arboriculture', fr:'Amandier',          ar:'اللوز',          minAlt:200,  maxAlt:1200, minPluv:400, minHF:0 },
+  { id:'Pistachier',       icon:'🟢', fam:'Arboriculture', fr:'Pistachier',        ar:'الفستق',         minAlt:100,  maxAlt:800,  minPluv:200, minHF:800 },
+  { id:'Dattier',          icon:'🌴', fam:'Arboriculture', fr:'Dattier',           ar:'النخيل',         minAlt:0,    maxAlt:1200, minPluv:100, minHF:0 },
+  { id:'Caroubier',        icon:'🌿', fam:'Arboriculture', fr:'Caroubier',         ar:'الخروب',         minAlt:100,  maxAlt:800,  minPluv:400, minHF:0 },
+  { id:'Avocat',           icon:'🥑', fam:'Arboriculture', fr:'Avocat',            ar:'الأفوكادو',      minAlt:0,    maxAlt:800,  minPluv:600, minHF:0 },
+  { id:'Myrtille',         icon:'🫐', fam:'Arboriculture', fr:'Myrtille',          ar:'التوت الأزرق',   minAlt:0,    maxAlt:600,  minPluv:700, minHF:600 },
+  /* ── MARAÎCHAGE ────────────────────────────────────────────── */
+  { id:'Tomate',           icon:'🍅', fam:'Maraîchage',    fr:'Tomate',            ar:'الطماطم',        minAlt:0,    maxAlt:400,  minPluv:0,   minHF:0 },
+  { id:'Poivron',          icon:'🫑', fam:'Maraîchage',    fr:'Poivron',           ar:'الفلفل',         minAlt:0,    maxAlt:400,  minPluv:0,   minHF:0 },
+  { id:'PommeDeTerre',     icon:'🥔', fam:'Maraîchage',    fr:'Pomme de terre',    ar:'البطاطا',        minAlt:0,    maxAlt:2000, minPluv:0,   minHF:0 },
+  { id:'Oignon',           icon:'🧅', fam:'Maraîchage',    fr:'Oignon',            ar:'البصل',          minAlt:0,    maxAlt:1500, minPluv:0,   minHF:0 },
+  { id:'HaricotVert',      icon:'🫘', fam:'Maraîchage',    fr:'Haricot vert',      ar:'اللوبيا الخضرا', minAlt:0,    maxAlt:800,  minPluv:0,   minHF:0 },
+  { id:'Courgette',        icon:'🥒', fam:'Maraîchage',    fr:'Courgette',         ar:'القرعة',         minAlt:0,    maxAlt:800,  minPluv:0,   minHF:0 },
+  { id:'Melon',            icon:'🍈', fam:'Maraîchage',    fr:'Melon',             ar:'البطيخ الأصفر',  minAlt:0,    maxAlt:600,  minPluv:0,   minHF:0 },
+  { id:'Pasteque',         icon:'🍉', fam:'Maraîchage',    fr:'Pastèque',          ar:'الدلاح',         minAlt:0,    maxAlt:600,  minPluv:0,   minHF:0 },
+  /* ── CÉRÉALES & LÉGUMINEUSES ───────────────────────────────── */
+  { id:'BleTendre',        icon:'🌾', fam:'Céréale',       fr:'Blé tendre',        ar:'القمح',          minAlt:0,    maxAlt:1200, minPluv:280, minHF:0 },
+  { id:'Orge',             icon:'🌾', fam:'Céréale',       fr:'Orge',              ar:'الشعير',         minAlt:0,    maxAlt:1400, minPluv:200, minHF:0 },
+  { id:'Mais',             icon:'🌽', fam:'Céréale',       fr:'Maïs',              ar:'الذرة',          minAlt:0,    maxAlt:800,  minPluv:0,   minHF:0 },
+  { id:'PoisChiche',       icon:'🫛', fam:'Céréale',       fr:'Pois chiche',       ar:'الحمص',          minAlt:0,    maxAlt:1200, minPluv:300, minHF:0 },
+  { id:'Feve',             icon:'🫘', fam:'Céréale',       fr:'Fève',              ar:'الفول',          minAlt:0,    maxAlt:1500, minPluv:300, minHF:0 },
+  { id:'Lentille',         icon:'🟤', fam:'Céréale',       fr:'Lentille',          ar:'العدس',          minAlt:0,    maxAlt:1200, minPluv:300, minHF:0 },
+  /* ── INDUSTRIELLES ─────────────────────────────────────────── */
+  { id:'Betterave',        icon:'🟣', fam:'Industrielle',  fr:'Betterave sucrière',ar:'الشمندر',        minAlt:0,    maxAlt:600,  minPluv:0,   minHF:0 },
+  { id:'Tournesol',        icon:'🌻', fam:'Industrielle',  fr:'Tournesol',         ar:'عباد الشمس',     minAlt:0,    maxAlt:800,  minPluv:300, minHF:0 },
+  /* ── CULTURES SPÉCIALES ────────────────────────────────────── */
+  { id:'Safran',           icon:'🌸', fam:'Spéciale',      fr:'Safran',            ar:'الزعفران',       minAlt:1200, maxAlt:2000, minPluv:350, minHF:500 },
+  { id:'Arganier',         icon:'🌳', fam:'Spéciale',      fr:'Arganier',          ar:'الأركان',        minAlt:0,    maxAlt:1400, minPluv:150, minHF:0 },
+  { id:'CactusNopal',      icon:'🌵', fam:'Spéciale',      fr:'Cactus Nopal',      ar:'الهندية',        minAlt:0,    maxAlt:1800, minPluv:100, minHF:0 },
+];
+
+
+const REGIONS = [
+  { id:'souss',     fr:'Souss-Massa',         ar:'سوس-ماسة',              alt:0,    pluv:200, tmin:-1,  tmax:40, hf:0,   clim_fr:'Aride côtier',      clim_ar:'جاف ساحلي' },
+  { id:'beni',      fr:'Béni Mellal-Khénifra',ar:'بني ملال-خنيفرة',       alt:400,  pluv:450, tmin:-5,  tmax:42, hf:300, clim_fr:'Semi-aride/Sub-hum.', clim_ar:'شبه جاف' },
+  { id:'haouz',     fr:'Al Haouz-Marrakech',  ar:'الحوز-مراكش',           alt:500,  pluv:250, tmin:-3,  tmax:44, hf:200, clim_fr:'Semi-aride chaud',   clim_ar:'شبه جاف حار' },
+  { id:'meknes',    fr:'Meknès-Saïss',        ar:'مكناس-سايس',            alt:550,  pluv:550, tmin:-5,  tmax:38, hf:400, clim_fr:'Sub-humide',         clim_ar:'شبه رطب' },
+  { id:'ifrane',    fr:'Ifrane-Moyen Atlas',   ar:'إفران-الأطلس المتوسط',  alt:1200, pluv:700, tmin:-15, tmax:30, hf:1200,clim_fr:'Montagnard froid',   clim_ar:'جبلي بارد' },
+  { id:'oriental',  fr:'Oriental (Oujda)',     ar:'الشرق (وجدة)',          alt:500,  pluv:350, tmin:-5,  tmax:43, hf:300, clim_fr:'Semi-aride cont.',   clim_ar:'شبه جاف قاري' },
+  { id:'tadla',     fr:'Tadla (Béni Mellal)',  ar:'تادلة',                 alt:420,  pluv:380, tmin:-4,  tmax:43, hf:250, clim_fr:'Semi-aride',         clim_ar:'شبه جاف' },
+  { id:'tafilalet', fr:'Tafilalet-Errachidia', ar:'تافيلالت-الراشيدية',   alt:1000, pluv:150, tmin:-10, tmax:46, hf:350, clim_fr:'Aride continental',  clim_ar:'جاف قاري' },
+  { id:'gharb',     fr:'Gharb-Kenitra',        ar:'الغرب-القنيطرة',        alt:30,   pluv:650, tmin:2,   tmax:38, hf:100, clim_fr:'Sub-humide côtier',  clim_ar:'شبه رطب ساحلي' },
+  { id:'draa',      fr:'Draâ-Tafilalet',       ar:'درعة-تافيلالت',        alt:800,  pluv:180, tmin:-8,  tmax:45, hf:300, clim_fr:'Aride montagneux',   clim_ar:'جاف جبلي' },
+];
+
+const VARIETIES_DATA = [
+  {v:'Picholine marocaine',ar:'بيشولين',c:'Olivier',roi:7,rdt:'≈3-5 t/ha (selon conduite, densité, irrigation)',ca:45000,eau:0,n:0,altMin:200,altMax:800,pluvMin:0,hf:0,gel:'Modérée (dégâts < -7°C)',sec:'Élevée mais rendement supérieur sous irrigation',prix:'10-18',pep:'Large (pépinières agréées ONSSA)',ori:'Maroc (variété population dominante)',rav:'Mouche de l’olive, cochenilles, acariens',mal:'Œil de paon, verticilliose, chancres',trt:'Surveillance + traitements homologués (cuivre, piégeage mouche, etc.)',sol:'Sols calcaires/squelettiques bien drainés, tolère sels et bore',notes:'Variété dominante 60% du verger marocain'  },
+  {v:'Menara',ar:'منارة',c:'Olivier',roi:6,rdt:'≈7-8 t/ha (bour performant à 167 arb/ha)',ca:54000,eau:0,n:0,altMin:0,altMax:2000,pluvMin:0,hf:0,gel:'Modérée',sec:'Bonne aptitude au bour (pluvial)',prix:'10-18',pep:'Large (clones INRA diffusés)',ori:'Maroc (clone sélectionné de Picholine marocaine)',rav:'Mouche de l’olive, cochenilles, acariens',mal:'Œil de paon, verticilliose, chancres',trt:'Surveillance + traitements homologués; cuivre contre œil de paon; piégeage mouche',sol:'Sols argilo-limoneux ou calcaires bien drainés',notes:'Teneur huile la plus élevée au Maroc (24-28%)'  },
+  {v:'Haouzia',ar:'الحوزية',c:'Olivier',roi:9,rdt:'3.5',ca:38000,eau:2200,n:70,altMin:100,altMax:400,pluvMin:180,hf:0,gel:'Faible',sec:'Élevée',prix:'8-15',pep:'Large',ori:'Maroc',rav:'Mouche de l\'olive (élevé), Cochenille',mal:'Fumagine (moyen)',trt:'Spinosad, Cuivre',sol:'Tous types bien drainés',notes:'Variété table #1 Maroc, calibre gros'  },
+  {v:'Arbequina',ar:'أرباكينا',c:'Olivier',roi:5,rdt:'6',ca:72000,eau:3500,n:100,altMin:100,altMax:500,pluvMin:300,hf:0,gel:'Modérée',sec:'Modérée',prix:'10-18',pep:'Large',ori:'Espagne',rav:'Mouche (modéré)',mal:'Verticillium (modéré)',trt:'Spinosad, Fongicides',sol:'Tous types drainés',notes:'Idéale super haute densité >400 arb/ha'  },
+  {v:'Achouri',ar:'أشوري',c:'Pistachier',roi:5,rdt:'3-6 t/ha (en parité)',ca:200000,eau:0,n:0,altMin:100,altMax:800,pluvMin:0,hf:0,gel:'Excellente (-12°C)',sec:'Excellente',prix:'40-80',pep:'SONACOS / pépinières Essaouira',ori:'Tunisie (importée Maroc)',rav:'Pucerons, tétranyque',mal:'Verticillium, Phytophthora',trt:'Drainage + cuivre',sol:'Limoneux, sableux, calcaires, profonds',notes:'Alternance régulière; bonne adaptation Maroc; 1♂/10♀'  },
+  {v:'Mateur',ar:'ماطور',c:'Pistachier',roi:5,rdt:'4-7 t/ha',ca:240000,eau:0,n:0,altMin:100,altMax:800,pluvMin:0,hf:0,gel:'Excellente',sec:'Excellente',prix:'40-80',pep:'SONACOS',ori:'Tunisie',rav:'Tétranyque',mal:'Verticillium',trt:'Résistante',sol:'Calcaires, limoneux',notes:'Très productive, bonne régularité'  },
+  {v:'Kerman',ar:'كيرمان',c:'Pistachier',roi:11,rdt:'5-8 t/ha',ca:350000,eau:0,n:0,altMin:100,altMax:700,pluvMin:0,hf:0,gel:'Excellente',sec:'Bonne',prix:'50-90',pep:'Import USA/Maroc',ori:'USA (Californie)',rav:'Pucerons',mal:'Alternaria',trt:'Fongicides',sol:'Tous sols drainés',notes:'Référence mondiale; 1♂/8♀; excellente qualité'  },
+  {v:'Zahra',ar:'زهرة',c:'Tomate',roi:1,rdt:'120',ca:1080000,eau:6000,n:180,altMin:0,altMax:400,pluvMin:0,hf:0,gel:'Élevée',sec:'Faible',prix:'8-18',pep:'Large',ori:'Maroc',rav:'Tuta absoluta (élevé), Acariens (élevé)',mal:'Mildiou (élevé), Botrytis (élevé), TYLCV (élevé)',trt:'Spinosad, Abamectine, Mancozèbe',sol:'Limoneux, Sableux drainé',notes:'Variété export #1 région Souss'  },
+  {v:'Pristyla',ar:'بريستيلا',c:'Tomate',roi:1,rdt:'100-130',ca:1040000,eau:7000,n:350,altMin:0,altMax:400,pluvMin:0,hf:0,gel:'Élevée',sec:'Faible',prix:'8-18',pep:'Large (Souss, Casablanca)',ori:'Pays-Bas (Rijk Zwaan)',rav:'Tuta absoluta (élevé), Bemisia tabaci (vecteur TYLCV), Acariens',mal:'Botrytis (moyen), Oïdium (moyen) — résistante TYLCV',trt:'Spinosad (Tuta), lutte biologique Macrolophus, Cuivre (Botrytis)',sol:'Sableux, sablo-limoneux bien drainé',notes:'Variété dominante Souss 58% marché ronde TYLCV; cycle 9-10 mois; calibre 67-82; fermeté élevée pour export'  },
+  {v:'Pitenza',ar:'بيتنزا',c:'Tomate',roi:1,rdt:'80-100',ca:1100000,eau:7000,n:320,altMin:0,altMax:400,pluvMin:0,hf:0,gel:'Élevée',sec:'Faible',prix:'12-28',pep:'Large (Souss principalement)',ori:'Pays-Bas (De Ruiter / Bayer)',rav:'Tuta absoluta (élevé), Acariens (élevé), Noctuelles',mal:'Botrytis grappes (élevé), Cladosporiose, Mildiou',trt:'Spinosad (Tuta), Iprodione (Botrytis), Chlorothalonil',sol:'Sableux, sablo-limoneux, hors sol possible',notes:'Variété grappe dominante Maroc 85% segment; prix export supérieur; vendues en grappes entières; cycle 9-10 mois'  },
+  {v:'Calvi',ar:'كالفي',c:'Tomate',roi:1,rdt:'100-120',ca:960000,eau:7000,n:350,altMin:0,altMax:400,pluvMin:0,hf:0,gel:'Élevée',sec:'Faible',prix:'8-16',pep:'Large',ori:'Espagne / Méditerranée (Agrembal)',rav:'Tuta absoluta, Bemisia tabaci, Acariens (moyen en hiver)',mal:'Botrytis (élevé période froide), Mildiou, Oïdium — Résistante ToMV:0-2/Va:0/Vd:0/Fol:0,1',trt:'Iprodione/Fenhexamid (Botrytis), Spinosad (Tuta)',sol:'Sablo-limoneux, sableux bien drainé',notes:'Référence marché local ET export (92% segment non-TYLCV); fruit 150-190g légèrement aplati côtelé; excellente conservation en froid; calibre 67-82'  },
+  {v:'Retyna',ar:'ريتينا',c:'Tomate',roi:1,rdt:'100-120',ca:1000000,eau:7000,n:350,altMin:0,altMax:400,pluvMin:0,hf:0,gel:'Élevée',sec:'Faible',prix:'8-18',pep:'Large (Souss)',ori:'Pays-Bas (Syngenta / Synergenta Seeds)',rav:'Tuta absoluta (élevé), Bemisia tabaci (vecteur TYLCV), Acariens',mal:'Botrytis (moyen), Oïdium (moyen) — résistante TYLCV',trt:'Spinosad (Tuta), Abamectine (acariens), Cuivre (Botrytis)',sol:'Sablo-limoneux, sableux bien drainé',notes:'2ème variété ronde TYLCV résistante au Souss (14%); alternative à Pristyla; bonnes caractéristiques post-récolte; calibre 67-82'  },
+  {v:'Arihane',ar:'أريحان',c:'BleTendre',roi:1,rdt:'55',ca:165000,eau:2500,n:120,altMin:0,altMax:800,pluvMin:280,hf:0,gel:'Élevée',sec:'Modérée',prix:'2.8-4',pep:'Large',ori:'Maroc',rav:'Puceron des épis (élevé), Criocère (moyen)',mal:'Rouille jaune (élevé), Septoriose (élevé)',trt:'Pyréthroïdes, Triazoles',sol:'Argilo-limoneux fertile',notes:'Variété précoce résistante sécheresse'  },
+  {v:'Achtar',ar:'أشطر',c:'BleTendre',roi:1,rdt:'3.5-5.5 (bour) / 6-8 (irrigué)',ca:0,eau:3000,n:120,altMin:0,altMax:1200,pluvMin:250,hf:0,gel:'Modérée',sec:'Bonne (variété bour + irrigué)',prix:'2.8-4',pep:'Large — SONACOS + coopératives céréales',ori:'Maroc — INRA 1988 (code BT1590)',rav:'Puceron des épis (élevé), Criocère (moyen), Cécidomyie (sensible)',mal:'Rouille jaune (sensible), Septoriose (sensible), Piétin-verse',trt:'Pyréthroïdes (pucerons); Triazoles (rouilles/septoriose); fongicide préventif si pluies prolongées',sol:'Argilo-limoneux fertile, calcaire modéré',notes:'Variété témoin nationale référence depuis 1988; hauteur 85-100 cm; tallage moyen; cycle semi-précoce; PS 80; protéines 12.5%; W=250; valeur boulangère bonne; résistante verse modérée'  },
+  {v:'Mehdia',ar:'المهدية',c:'BleTendre',roi:1,rdt:'5.5-7 (bour humide) / 7-9 (irrigué)',ca:0,eau:3500,n:140,altMin:0,altMax:800,pluvMin:350,hf:0,gel:'Modérée',sec:'Moyenne (adaptée zones humides et irriguées)',prix:'2.8-4',pep:'Large — SONACOS + coopératives Gharb',ori:'Maroc — INRA 1993 (code BT1755)',rav:'Puceron des épis (élevé), Cécidomyie (sensible), Criocère',mal:'Rouille jaune (sensible), Septoriose (sensible), Oïdium (moyen)',trt:'Triazoles (rouilles); Strobilurines (septoriose/oïdium); surveillance hebdomadaire au printemps',sol:'Argilo-limoneux profond fertile, Tirs (Gharb)',notes:'Meilleure variété en rendement essais Nord-Ouest (57+ qx/ha); hauteur 90-110 cm; tallage moyen-élevé; cycle semi-tardif; PS 81; protéines 12.8%; W=260; valeur boulangère très bonne; recommandée Gharb, Saïs, Doukkala irrigué'  },
+  {v:'Amal',ar:'أمل',c:'BleTendre',roi:1,rdt:'4.1-5.5 (bour) / 8.4-12.2 (irrigué)',ca:0,eau:3000,n:120,altMin:0,altMax:1000,pluvMin:280,hf:0,gel:'Modérée',sec:'Bonne',prix:'2.8-4',pep:'Large — SONACOS',ori:'Maroc — INRA 1993 (code BT1756); pédigré : Bow\'s\'/Buc\'s\'',rav:'Puceron des épis (élevé), Criocère (moyen)',mal:'Septoriose (résistance moyenne), Rouille brune (bonne résistance), Rouille noire (bonne résistance), Rouille jaune (bonne résistance)',trt:'Triazoles préventif si pluies prolongées; surveillance pucerons épiaison',sol:'Argilo-limoneux fertile, tous types bien drainés',notes:'Rendement moyen 41 qx/ha (17 environnements); record 122 qx/ha irrigué Afourer 1993 et 84 qx/ha bour Marchouch 1991; dépasse Achtar de 2.63%; hauteur 85-120 cm; PS 82.10; protéines 12.67%; W=231; indice Zeleny 36.5; hydratation 61.5%; valeur meunière bonne'  },
+  {v:'Arrehane',ar:'أرهان',c:'BleTendre',roi:1,rdt:'3.5-5 (bour semi-aride) / 6-8 (irrigué)',ca:0,eau:2800,n:110,altMin:0,altMax:1000,pluvMin:250,hf:0,gel:'Modérée',sec:'Bonne — gain +10% sur Achtar en semi-aride',prix:'2.8-4',pep:'Large — SONACOS + coopératives céréales',ori:'Maroc — INRA 1984 (code BT1774 / L222)',rav:'Puceron des épis (élevé), Criocère (moyen)',mal:'Septoriose (sensibilité moyenne), Rouille brune (bonne résistance), Rouille noire (bonne résistance), Rouille jaune (résistance moyenne)',trt:'Triazoles si rouille jaune détectée; pyréthroïdes pucerons; cécidomyie : variété résistante (gène H5)',sol:'Argilo-limoneux, limoneux — tous types drainés',notes:'Potentiel 80 qx/ha irrigué; hauteur 75-100 cm; tallage moyen; cycle précoce (adapté semis tardif); PS 79.45; protéines 12.91%; W=253; P/L=0.53; indice Zeleny 22.5; Très résistant cécidomyie (gène H5); valeur boulangère+pâtissière assez bonnes'  },
+  {v:'Crocus sativus Taliouine',ar:'زعفران تالوين',c:'Safran',roi:8,rdt:'3-6 kg stigmates',ca:24000,eau:1500,n:40,altMin:1200,altMax:2000,pluvMin:350,hf:500,gel:'Élevée',sec:'Élevée',prix:'3000-8000/kg',pep:'Large',ori:'Maroc',rav:'Acariens (élevé), Taupes (moyen)',mal:'Fusarium (élevé), Pourriture bulbes (élevé)',trt:'Soufre, Fongicides systémiques',sol:'Calcaire drainé, Sol léger',notes:'IGP Taliouine reconnue, marché export Moyen-Orient'  },
+  {v:'Taznakht',ar:'تزناخت',c:'Safran',roi:8,rdt:'3-6 kg stigmates (15-30 kg fleurs)',ca:24000,eau:1500,n:40,altMin:1200,altMax:2000,pluvMin:350,hf:500,gel:'Élevée (bulbes)',sec:'Élevée',prix:'3000-8000',pep:'Large — Coopératives Taliouine-Taznakht',ori:'Maroc — Clone local Taznakht (cercle Taliouine-Taznakht)',rav:'Acariens (élevé), Taupes (moyen)',mal:'Fusarium (élevé), Pourriture bulbes (élevé)',trt:'Soufre (acariens), Fongicides systémiques (Fusarium)',sol:'Calcaire drainé, sol léger sableux ou argilo-calcaire',notes:'2e zone production après Taliouine (80 ha); AOP Safran de Taliouine-Taznakht; altitude 1 200-1 800 m; crocus sativus clone local; rendement 5-10 kg stigmates/ha en pleine prod'  },
+  {v:'Siroua',ar:'سيرُوا',c:'Safran',roi:9,rdt:'3-5 kg stigmates',ca:21000,eau:1500,n:40,altMin:1400,altMax:2400,pluvMin:350,hf:500,gel:'Élevée',sec:'Élevée',prix:'3000-8000',pep:'Large — Coop Taliouine',ori:'Maroc — Clone Massif Siroua (cercle Taliouine-Taznakht)',rav:'Acariens, Taupes',mal:'Fusarium, Pourriture bulbes',trt:'Soufre, Fongicides',sol:'Calcaire rocailleux, bien drainé',notes:'Zone montagneuse Siroua (1 400-2 400 m); AOP Taliouine; clone local crocus sativus; rendement 4-8 kg stigmates/ha pleine prod; qualité IGP exceptionnelle'  },
+  {v:'Iznaguene',ar:'إزناغن',c:'Safran',roi:8,rdt:'3-6 kg stigmates',ca:24000,eau:1500,n:40,altMin:1200,altMax:2000,pluvMin:350,hf:500,gel:'Élevée',sec:'Élevée',prix:'3000-8000',pep:'Coopératives Taliouine',ori:'Maroc — Clone local cercle Taliouine (30 ha)',rav:'Acariens, Taupes',mal:'Fusarium, Pourriture',trt:'Soufre, Fongicides',sol:'Calcaire drainé, sol léger',notes:'Clone local Iznaguene (30 ha cercle Taliouine); AOP Safran de Taliouine; caractéristiques identiques clones Taliouine standard'  },
+  {v:'Wislsat',ar:'وِسلْسات',c:'Safran',roi:8,rdt:'3-6 kg stigmates',ca:24000,eau:1500,n:40,altMin:1200,altMax:2000,pluvMin:350,hf:500,gel:'Élevée',sec:'Élevée',prix:'3000-8000',pep:'Coopératives Taliouine',ori:'Maroc — Clone local cercle Taliouine (25 ha)',rav:'Acariens, Taupes',mal:'Fusarium, Pourriture',trt:'Soufre, Fongicides',sol:'Calcaire drainé',notes:'Clone local Wislsat (25 ha cercle Taliouine); AOP Safran de Taliouine; mêmes caractéristiques clones Taliouine standard'  },
+  {v:'Marcona',ar:'ماركونا',c:'Amandier',roi:4,rdt:'2-3 (amandes)',ca:60000,eau:4500,n:100,altMin:200,altMax:1000,pluvMin:400,hf:-100,gel:'Modérée (floraison)',sec:'Bonne',prix:'20-45',pep:'Large (Souss, Taza)',ori:'Espagne (adaptée Maroc)',rav:'Carpocapse, Cotonier, Monilia',mal:'',trt:'Tebufénoside (carpocapse), Cuivre (Monilia)',sol:'Calcaire, limoneux bien drainé, tolère sels',notes:'Variété dominante Maroc 15-25%; amande ronde grosse premium; floraison semi-précoce; rendement 2.5 T/ha amandes sèches; tolérance calcaire/sels excellente'  },
+  {v:'Fournat de Brézenaud',ar:'فورنات بريزانو',c:'Amandier',roi:4,rdt:'2-2.5',ca:50000,eau:4500,n:100,altMin:200,altMax:1000,pluvMin:400,hf:400,gel:'Modérée',sec:'Bonne',prix:'20-40',pep:'Large',ori:'France (adaptée Maroc)',rav:'Carpocapse, Cotonier',mal:'Monilia, Chancre',trt:'Tebufénoside, Cuivre',sol:'Calcaire, limoneux drainé',notes:'Pollinisateur idéal Marcona; floraison synchronisée; amande moyenne bonne qualité; utilisé 10% Maroc'  },
+  {v:'Ferragnès',ar:'فيراجنيس',c:'Amandier',roi:3,rdt:'2.5-3.5',ca:70000,eau:5000,n:120,altMin:200,altMax:1200,pluvMin:400,hf:500,gel:'Faible (floraison tardive)',sec:'Très bonne',prix:'20-45',pep:'Large (Taza, Souss)',ori:'France (INRA)',rav:'Carpocapse, Cotonier, Monilia',mal:'Monilia (moyenne), Rouille',trt:'Tebufénoside, Cuivre préventif',sol:'Calcaire, rocailleux, tolère sels',notes:'Floraison tardive (échappe gelées); 25% Taza; amande longue dure; excellente résistance sècheresse/sels; rendement 3 T/ha irrigué'  },
+  {v:'Ferraduel',ar:'فيرادويل',c:'Amandier',roi:3,rdt:'2.5-3.5',ca:70000,eau:5000,n:120,altMin:200,altMax:1200,pluvMin:400,hf:500,gel:'Faible (floraison tardive)',sec:'Très bonne',prix:'20-45',pep:'Large',ori:'France (INRA)',rav:'Carpocapse, Monilia',mal:'Monilia, Chancre',trt:'Tebufénoside, Cuivre',sol:'Calcaire, rocailleux, sels',notes:'Floraison tardive; 25% Taza; pollinisateur Ferragnès; amande longue bonne qualité; tolérance sècheresse/sels excellente'  },
+  {v:'Tuono',ar:'توونو',c:'Amandier',roi:3,rdt:'3-4',ca:90000,eau:5000,n:120,altMin:200,altMax:1000,pluvMin:400,hf:400,gel:'Faible',sec:'Excellente',prix:'25-50',pep:'Croissante (Souss, Taza)',ori:'Italie (moderne)',rav:'Carpocapse, Cotonier',mal:'Monilia (résistante), Chancre',trt:'Tebufénoside (carpocapse), Cuivre préventif',sol:'Tous types drainés, tolère calcaire',notes:'Autofertile; moderne; amande plate excellente qualité table; rendement 3.5 T/ha; résistant Monilia; intensif haute densité'  },
+  {v:'Canino',ar:'كانينو',c:'Abricotier',roi:3,rdt:'15-25',ca:100000,eau:5000,n:120,altMin:200,altMax:1200,pluvMin:400,hf:-300,gel:'Modérée (floraison)',sec:'Moyenne',prix:'5-12',pep:'Large (Souss, Meknès)',ori:'Espagne (variété dominante Maroc)',rav:'Carpocapse, Tordeuse',mal:'Monilia (floraison), Cytospora',trt:'Tebufénoside (carpocapse), Cuivre (Monilia)',sol:'Limoneux, argilo-calcaire bien drainé',notes:'Variété dominante Maroc 80%; floraison mi-précoce; fruit moyen jaune-orangé (40-50g); double usage frais/conserve; très productive Meknès/Haouz'  },
+  {v:'Del Patriarca',ar:'ديل باتْرياركا',c:'Abricotier',roi:2,rdt:'20-30',ca:140000,eau:5000,n:120,altMin:200,altMax:1000,pluvMin:400,hf:500,gel:'Modérée',sec:'Moyenne',prix:'6-15',pep:'Large',ori:'Espagne',rav:'Carpocapse',mal:'Monilia',trt:'Tebufénoside, Cuivre',sol:'Limoneux drainé',notes:'Très précoce (début mai Haouz, mi-mai Meknès); très productive; excellente oreillons; complète Canino'  },
+  {v:'Gilétano',ar:'جيليتانو',c:'Abricotier',roi:3,rdt:'15-25',ca:100000,eau:5000,n:120,altMin:200,altMax:1200,pluvMin:400,hf:500,gel:'Modérée',sec:'Moyenne',prix:'5-12',pep:'Large',ori:'Espagne',rav:'Carpocapse',mal:'Monilia',trt:'Tebufénoside, Cuivre',sol:'Limoneux drainé',notes:'Floraison mi-précoce; pollinisateur Canino; bonne qualité fruit; complète les vergers traditionnels'  },
+  {v:'Blenheim',ar:'بلينهايم',c:'Abricotier',roi:2,rdt:'20-30',ca:140000,eau:5000,n:120,altMin:200,altMax:1000,pluvMin:400,hf:500,gel:'Modérée',sec:'Moyenne',prix:'8-15',pep:'Moyenne',ori:'Angleterre (sélectionnée INRA Maroc)',rav:'Carpocapse',mal:'Monilia',trt:'Tebufénoside, Cuivre',sol:'Limoneux fertile drainé',notes:'Sélectionnée INRA Maroc; excellente qualité fruit; vergers modernes Meknès/Haouz'  },
+  {v:'Marouch',ar:'ماروش',c:'Abricotier',roi:3,rdt:'15-25',ca:100000,eau:5000,n:120,altMin:200,altMax:1200,pluvMin:400,hf:500,gel:'Modérée',sec:'Moyenne',prix:'5-12',pep:'Moyenne (INRA)',ori:'Maroc (clone INRA ex. Marouch 16)',rav:'Carpocapse',mal:'Monilia',trt:'Tebufénoside, Cuivre',sol:'Limoneux, calcaire drainé',notes:'Clone local INRA Maroc (ex. Marouch 16); maturité entre Del Patriarca et Canino; bonne productivité Meknès'  },
+  {v:'Mejhoul',ar:'مجْهُول',c:'Dattier',roi:5,rdt:'8-12',ca:360000,eau:10000,n:150,altMin:300,altMax:1200,pluvMin:100,hf:0,gel:'Faible',sec:'Excellente',prix:'30-80',pep:'Large (Drâa, Tafilalet)',ori:'Maroc (Tafilalet-Ziz)',rav:'Charançon rouge (Bayoud), Papillon‑cératite',mal:'Bayoud (Fusarium oxysporum)',trt:'Phéromones (charançon), sélection résistante Bayoud',sol:'Alluvions sableuses, argilo-calcaire',notes:'N°1 export Maroc; IGP Tafilalet; fruit noir demi-sec gros (8-10 cm); hababouk Juill-Oct; 50% production nationale labellisée'  },
+  {v:'Boufeggous',ar:'بوفِگُّوس',c:'Dattier',roi:6,rdt:'10-15',ca:250000,eau:10000,n:150,altMin:300,altMax:1000,pluvMin:100,hf:0,gel:'Faible',sec:'Excellente',prix:'20-50',pep:'Large (Drâa)',ori:'Maroc (Drâa-Tafilalet)',rav:'Charançon rouge, Papillon',mal:'Bayoud (résistante)',trt:'Phéromones, sélection résistante',sol:'Alluvions sableuses',notes:'N°1 production nationale; IGP; fruit jaune demi-frais gros; hababouk Août-Oct; très productive Drâa'  },
+  {v:'Bouskri',ar:'بُوسْكْري',c:'Dattier',roi:7,rdt:'8-12',ca:200000,eau:10000,n:150,altMin:300,altMax:1000,pluvMin:100,hf:0,gel:'Faible',sec:'Excellente',prix:'15-40',pep:'Large (Drâa)',ori:'Maroc (Drâa)',rav:'Charançon rouge',mal:'Bayoud (résistante)',trt:'Phéromones',sol:'Alluvions Drâa',notes:'IGP Bouskri Drâa; fruit jaune demi-frais; très répandue vallée Drâa; productive'  },
+  {v:'Jihel',ar:'جيهِل',c:'Dattier',roi:6,rdt:'10-15',ca:250000,eau:10000,n:150,altMin:300,altMax:1000,pluvMin:100,hf:0,gel:'Faible',sec:'Excellente',prix:'20-50',pep:'Large (Drâa)',ori:'Maroc (Drâa)',rav:'Charançon rouge',mal:'Bayoud (résistante)',trt:'Phéromones',sol:'Alluvions Drâa',notes:'IGP Jihel Drâa; fruit jaune demi-frais; très productive vallée Drâa'  },
+  {v:'Bourhare',ar:'بُورْهارِ',c:'Dattier',roi:7,rdt:'8-12',ca:200000,eau:10000,n:150,altMin:300,altMax:1200,pluvMin:100,hf:0,gel:'Faible',sec:'Excellente',prix:'15-40',pep:'Large (Drâa-Tafilalet)',ori:'Maroc (Drâa-Tafilalet)',rav:'Charançon rouge',mal:'Bayoud',trt:'Phéromones',sol:'Alluvions sud',notes:'Norme nationale; zone sud Drâa-Tafilalet; fruit demi-frais; productive'  },
+  {v:'Beldi Souss',ar:'كَرُوب بِلْدِيْ سُوس',c:'Caroubier',roi:6,rdt:'3-5 (gousses fraîches)',ca:0,eau:2500,n:80,altMin:100,altMax:800,pluvMin:400,hf:200,gel:'Modérée',sec:'Excellente',prix:'1.5-3',pep:'Large (plants locaux)',ori:'Maroc — Population locale Souss-Massa',rav:'Cératite (fruits), Cochenilles',mal:'Anthracnose (rare)',trt:'Spinosad (cératite), Huile blanche (cochenilles)',sol:'Calcaire, argilo-calcaire, tolère sels',notes:'Population locale dominante Souss; femelle 90%; très rustique; bois excellent chauffage; 80 000 ha forêt nationale'  },
+  {v:'Beldi Marrakech',ar:'كَرُوب بِلْدِيْ مَرَاكِش',c:'Caroubier',roi:7,rdt:'2.5-4',ca:0,eau:2500,n:80,altMin:400,altMax:1200,pluvMin:400,hf:200,gel:'Modérée',sec:'Excellente',prix:'1.5-3',pep:'Locale',ori:'Maroc — Population locale Marrakech-Safi',rav:'Cératite, Cochenilles',mal:'Rare',trt:'Spinosad',sol:'Calcaire montagneux',notes:'Altitude 600-1200m Marrakech; très rustique montagne; bois excellent'  },
+  {v:'Beldi Béni Mellal',ar:'كَرُوب بِلْدِيْ بِنِيْ مِلَال',c:'Caroubier',roi:6,rdt:'3-5',ca:0,eau:2500,n:80,altMin:500,altMax:1400,pluvMin:450,hf:200,gel:'Modérée',sec:'Excellente',prix:'1.5-3',pep:'Locale Béni Mellal',ori:'Maroc — Population locale Béni Mellal-Khénifra',rav:'Cératite, Cochenilles',mal:'Rare',trt:'Huile blanche, Spinosad',sol:'Argilo-calcaire fertile',notes:'Région n°1 production Maroc; altitude 500-1400m; très productive fertile argilo-calcaire'  },
+  {v:'Clone Arbovert F1',ar:'كْلُونْ أَرْبُوفِرْتْ F1',c:'Caroubier',roi:5,rdt:'4-6',ca:0,eau:3000,n:100,altMin:100,altMax:1000,pluvMin:400,hf:200,gel:'Modérée',sec:'Excellente',prix:'2-4',pep:'Arbovert Maroc',ori:'Maroc — Sélection Arbovert ONSSA 2023',rav:'Cératite',mal:'Rare',trt:'Spinosad',sol:'Calcaire, sels, tous types drainés',notes:'1ère sélection femelle ONSSA 2023; 90% femelle productive; haute densité; moderne export gousses'  },
+  {v:'Pollinisateur Mâle',ar:'ذَكَرْ تَلْقِيح',c:'Caroubier',roi:5,rdt:'— (pollinisateur)',ca:0,eau:2500,n:50,altMin:100,altMax:1000,pluvMin:400,hf:200,gel:'Modérée',sec:'Excellente',prix:'—',pep:'Arbovert',ori:'Maroc — Sélection Arbovert ONSSA 2023',rav:'Cochenilles',mal:'Rare',trt:'Huile blanche',sol:'Tous types',notes:'1er mâle certifié ONSSA Maroc 2023; 1 arbre/15 femelles; pollinisateur universel toutes populations Beldi'  },
+  {v:'Sefri',ar:'Rommane',c:'Grenadier',roi:5,rdt:'20-30',ca:0,eau:0,n:0,altMin:0,altMax:800,pluvMin:0,hf:0,gel:'Craint les conditions généralement froides des hautes altitudes',sec:'Relative; au détriment de la croissance et de la fructification',prix:'',pep:'',ori:'Maroc',rav:'Pucerons, oiseaux (mynas/merles), nématodes Meloidogyne incognita',mal:'Pourriture interne du fruit (graines noires), éclatement physiologique, HSVd',trt:'Peu d’interventions; insecticide contre pucerons si nécessaire, irrigation régulière pour limiter éclatement',sol:'Alluvions profonds, argilo-limoneux, tolère calcaire et salinité',notes:'Variété marocaine; vigueur moyenne, port semi-dressé et compact; floraison début mai sur un mois; maturité début octobre; fruits gros (~500 g), jaunes; graines rose-claire, demi-tendres, juteuses, très sucrées (14 °Brix; acidité 0,24 g/100 g jus).'  },
+  {v:'Wonderful',ar:'Rommane',c:'Grenadier',roi:5,rdt:'20-30',ca:0,eau:0,n:0,altMin:0,altMax:800,pluvMin:0,hf:0,gel:'Craint les conditions généralement froides des hautes altitudes',sec:'Relative; au détriment de la croissance et de la fructification',prix:'',pep:'',ori:'Étrangère',rav:'Pucerons, oiseaux (mynas/merles), nématodes Meloidogyne incognita',mal:'Pourriture interne du fruit (graines noires), éclatement physiologique, HSVd',trt:'Peu d’interventions; insecticide contre pucerons si nécessaire, irrigation régulière pour limiter éclatement',sol:'Alluvions profonds, argilo-limoneux, tolère calcaire et salinité',notes:'Variété étrangère mentionnée par l’INRA comme génotype complètement acide quel que soit le milieu de culture (orthographe source: Wanderful).'  },
+  {v:'Zhéri précoce',ar:'Rommane',c:'Grenadier',roi:5,rdt:'12-18',ca:0,eau:0,n:0,altMin:0,altMax:800,pluvMin:0,hf:0,gel:'Craint les conditions généralement froides des hautes altitudes',sec:'Relative; au détriment de la croissance et de la fructification',prix:'',pep:'',ori:'Maroc',rav:'Pucerons, oiseaux (mynas/merles), nématodes Meloidogyne incognita',mal:'Pourriture interne du fruit (graines noires), éclatement physiologique, HSVd',trt:'Peu d’interventions; insecticide contre pucerons si nécessaire, irrigation régulière pour limiter éclatement',sol:'Alluvions profonds, argilo-limoneux, tolère calcaire et salinité',notes:'Clone de Zhéri; vigueur moyenne, port semi-dressé; floraison fin avril; maturité fin septembre à mi-octobre; précoce; 20-25 kg/arbre à 8 ans; fruits 300-350 g; graines tendres roses, juteuses, très sucrées (15 °Brix; acidité 0,25 g/100 g jus).'  },
+  {v:'Zhéri tardif',ar:'Rommane',c:'Grenadier',roi:5,rdt:'12-18',ca:0,eau:0,n:0,altMin:0,altMax:800,pluvMin:0,hf:0,gel:'Craint les conditions généralement froides des hautes altitudes',sec:'Relative; au détriment de la croissance et de la fructification',prix:'',pep:'',ori:'Maroc',rav:'Pucerons, oiseaux (mynas/merles), nématodes Meloidogyne incognita',mal:'Pourriture interne du fruit (graines noires), éclatement physiologique, HSVd',trt:'Peu d’interventions; insecticide contre pucerons si nécessaire, irrigation régulière pour limiter éclatement',sol:'Alluvions profonds, argilo-limoneux, tolère calcaire et salinité',notes:'Clone de Zhéri avec décalage de maturité d’environ deux semaines par rapport à Zhéri précoce; caractéristiques pomologiques proches; graines blanches, tendres, juteuses, très sucrées.'  },
+  {v:'Djeibi',ar:'Rommane',c:'Grenadier',roi:5,rdt:'20-30',ca:0,eau:0,n:0,altMin:0,altMax:800,pluvMin:0,hf:0,gel:'Craint les conditions généralement froides des hautes altitudes',sec:'Relative; au détriment de la croissance et de la fructification',prix:'',pep:'',ori:'Maroc',rav:'Pucerons, oiseaux (mynas/merles), nématodes Meloidogyne incognita',mal:'Pourriture interne du fruit (graines noires), éclatement physiologique, HSVd',trt:'Peu d’interventions; insecticide contre pucerons si nécessaire, irrigation régulière pour limiter éclatement',sol:'Alluvions profonds, argilo-limoneux, tolère calcaire et salinité',notes:'Variété marocaine; vigueur élevée, port semi-dressé; floraison début mai; maturité à partir de mi-octobre; fruits 350 g, épiderme jaunâtre; graines 0,4 g, demi-tendres, rose-claires, très sucrées (16 °Brix; acidité 0,2 g/100 g jus).'  },
+  {v:'Nour (MA3)',ar:'L3nsour (clémentine)',c:'Agrumes',roi:5,rdt:'30-40 (jusqu’à 60 t/ha en verger bien conduit)',ca:0,eau:0,n:0,altMin:0,altMax:400,pluvMin:0,hf:0,gel:'Forte sensibilité au gel hivernal répété (< -3°C)',sec:'Faible, chute de fruits et baisse de calibre sans eau',prix:'',pep:'',ori:'Maroc',rav:'Pucerons, cochenilles, mineuse des agrumes, aleurodes, acariens, mouches, chenilles',mal:'Phytophthora, mal sec, pourritures de fruits, maladies de conservation',trt:'Protection intégrée : surveillance, lutte biologique, fongicides/insecticides homologués si seuils dépassés',sol:'Alluvions Dess, Hamri, Rmels, Tirs bien drainés',notes:'Clémentine Nour (MA3) : principale sélection marocaine, arbre à port globuleux, vigueur moyenne à bonne, feuillage dense ; fruits globuleux légèrement aplatis, calibre moyen à bon, écorce semi-adhérente parfois rugueuse, généralement sans pépins, très productifs et tardifs (maturité mi-janvier à fin février-début mars), bonne tolérance au froid hivernal.'  },
+  {v:'Cassar',ar:'L3nsour (clémentine)',c:'Agrumes',roi:5,rdt:'30-40 (jusqu’à 60 t/ha en verger bien conduit)',ca:0,eau:0,n:0,altMin:0,altMax:400,pluvMin:0,hf:0,gel:'Forte sensibilité au gel hivernal répété (< -3°C)',sec:'Faible, chute de fruits et baisse de calibre sans eau',prix:'',pep:'',ori:'Sélection méditerranéenne',rav:'Pucerons, cochenilles, mineuse des agrumes, aleurodes, acariens, mouches, chenilles',mal:'Phytophthora, mal sec, pourritures de fruits, maladies de conservation',trt:'Protection intégrée : surveillance, lutte biologique, fongicides/insecticides homologués si seuils dépassés',sol:'Alluvions Dess, Hamri, Rmels, Tirs bien drainés',notes:'Clémentine Cassar : vigueur moyenne, port ramassé en boule ; fruits de calibre moyen, forme souvent aplatie à l’apex, peau fine, facile à éplucher ; productivité plus capricieuse que Nour, maturité de novembre à janvier.'  },
+  {v:'Marisol',ar:'L3nsour (clémentine)',c:'Agrumes',roi:5,rdt:'30-40 (jusqu’à 60 t/ha en verger bien conduit)',ca:0,eau:0,n:0,altMin:0,altMax:400,pluvMin:0,hf:0,gel:'Forte sensibilité au gel hivernal répété (< -3°C)',sec:'Faible, chute de fruits et baisse de calibre sans eau',prix:'',pep:'',ori:'Espagne',rav:'Pucerons, cochenilles, mineuse des agrumes, aleurodes, acariens, mouches, chenilles',mal:'Phytophthora, mal sec, pourritures de fruits, maladies de conservation',trt:'Protection intégrée : surveillance, lutte biologique, fongicides/insecticides homologués si seuils dépassés',sol:'Alluvions Dess, Hamri, Rmels, Tirs bien drainés',notes:'Clémentine Marisol : variété précoce, maturité d’octobre à décembre ; fruits de calibre moyen, faciles à éplucher, bonne coloration et bon équilibre sucres/acidité.'  },
+  {v:'Nules',ar:'L3nsour (clémentine)',c:'Agrumes',roi:5,rdt:'30-40 (jusqu’à 60 t/ha en verger bien conduit)',ca:0,eau:0,n:0,altMin:0,altMax:400,pluvMin:0,hf:0,gel:'Forte sensibilité au gel hivernal répété (< -3°C)',sec:'Faible, chute de fruits et baisse de calibre sans eau',prix:'',pep:'',ori:'Espagne',rav:'Pucerons, cochenilles, mineuse des agrumes, aleurodes, acariens, mouches, chenilles',mal:'Phytophthora, mal sec, pourritures de fruits, maladies de conservation',trt:'Protection intégrée : surveillance, lutte biologique, fongicides/insecticides homologués si seuils dépassés',sol:'Alluvions Dess, Hamri, Rmels, Tirs bien drainés',notes:'Clémentine Nules : variété de saison, maturité de novembre à janvier ; fruits de calibre moyen, bonne coloration, qualité gustative appréciée pour le marché frais.'  },
+  {v:'Afourer / Nadorcott',ar:'L3nsour (clémentine)',c:'Agrumes',roi:5,rdt:'30-40 (jusqu’à 60 t/ha en verger bien conduit)',ca:0,eau:0,n:0,altMin:0,altMax:400,pluvMin:0,hf:0,gel:'Forte sensibilité au gel hivernal répété (< -3°C)',sec:'Faible, chute de fruits et baisse de calibre sans eau',prix:'',pep:'',ori:'Maroc',rav:'Pucerons, cochenilles, mineuse des agrumes, aleurodes, acariens, mouches, chenilles',mal:'Phytophthora, mal sec, pourritures de fruits, maladies de conservation',trt:'Protection intégrée : surveillance, lutte biologique, fongicides/insecticides homologués si seuils dépassés',sol:'Alluvions Dess, Hamri, Rmels, Tirs bien drainés',notes:'Mandarine Nadorcott (Afourer) : hybride naturel de Murcott sélectionné par l’INRA à la station d’Afourer ; fruits sphériques aplatis, calibre petit à moyen, écorce fine orange intense, facile à éplucher ; chair très juteuse, presque sans pépins ; variété tardive à forte valeur pour l’export, largement plantée dans les régions du Gharb, Beni Mellal, Marrakech et Oriental.'  },
+  {v:'Aïssa',ar:'عيسى',c:'CactusNopal',roi:3,rdt:'15-25 raquettes 10 fruits',ca:75000,eau:2500,n:80,altMin:0,altMax:800,pluvMin:200,hf:0,gel:'Faible',sec:'Excellente',prix:'3',pep:'Pépinières Souss INRA',ori:'Maroc Sidi Ifni',rav:'Cochenille Dactylopius carpocapse',mal:'Pourriture Phytophthora',trt:'Spinosad bio huile cuivre',sol:'Sablo-limoneux calcaire drainé',notes:'Dominante Sidi Ifni résist cochenille'  },
+  {v:'Moussa',ar:'موسى',c:'CactusNopal',roi:2,rdt:'20-30 raquettes 12 fruits',ca:100000,eau:3000,n:100,altMin:0,altMax:600,pluvMin:250,hf:0,gel:'Modéré',sec:'Excellente',prix:'2.5',pep:'Coops Tiznit',ori:'Maroc Tiznit',rav:'Cochenille acariens doryphore',mal:'Anthracnose',trt:'Pyréthrinoïdes soufre',sol:'Tous drainés tol calcaire',notes:'88k ha Souss tardive'  },
+  {v:'Achefri',ar:'عشفري',c:'CactusNopal',roi:3,rdt:'10-15 raquettes',ca:20000,eau:1500,n:50,altMin:0,altMax:1000,pluvMin:150,hf:0,gel:'Très faible',sec:'Tolère très bien',prix:'-',pep:'Boutures Sidi Ifni',ori:'Maroc Souss',rav:'Protection bétail épines',mal:'-',trt:'Épines naturelles',sol:'Rocheux graviers drainé',notes:'Haies anti-cochenille'  },
+  {v:'Rahmania',ar:'رحمانية',c:'CactusNopal',roi:3,rdt:'15-22 raquettes 8-10 fruits',ca:80000,eau:2800,n:90,altMin:0,altMax:700,pluvMin:220,hf:0,gel:'Faible',sec:'Bonne',prix:'4',pep:'Pépinières bio',ori:'Maroc Rhamna',rav:'Cochenille légère',mal:'Racinaire',trt:'Spinosad bio compost',sol:'Limoneux sableux drainé',notes:'Bio Label Maroc'  },
+  {v:'Dellahia',ar:'دلاهية',c:'CactusNopal',roi:2,rdt:'18-25 raquettes 5-8 fruits',ca:90000,eau:3500,n:120,altMin:0,altMax:900,pluvMin:180,hf:0,gel:'Faible',sec:'Supérieure',prix:'2',pep:'Pépinières Nord',ori:'Maroc Hoceïma',rav:'Cochenille doryphores',mal:'Pourriture',trt:'Cuivre spinosad',sol:'Calcaire rocailleux',notes:'50k ha Rhamna'  },
+  {v:'Red Chief',ar:'تفاح أحمر',c:'Pommier',roi:5,rdt:'25-40 t/ha (pleine production, haute altitude)',ca:175000,eau:0,n:0,altMin:800,altMax:1800,pluvMin:0,hf:0,gel:'Modérée (bourgeons sensibles au gel tardif)',sec:'Faible (chute de fruits si stress)',prix:'5-12',pep:'Disponible (pépinières agréées ONSSA, régions Midelt/Ifrane)',ori:'USA (clone de Starking Delicious)',rav:'Carpocapse, Puceron lanigère, Cochenille',mal:'Tavelure du pommier, Oïdium, Feu bactérien',trt:'Confusion sexuelle carpocapse, fongicides cupriques, produits homologués ONSSA',sol:'Limoneux à limono-argileux, bien drainé, profond',notes:'Clone coloré rouge intensif adapté haute montagne; Label Pomme de Midelt éligible; forte demande marché'  },
+  {v:'Golden Delicious',ar:'تفاح ذهبي',c:'Pommier',roi:5,rdt:'20-30 t/ha (rendement moyen national Maroc : 14 t/ha)',ca:140000,eau:0,n:0,altMin:500,altMax:1800,pluvMin:0,hf:0,gel:'Modérée (dégâts < -15°C sur bois; bourgeons sensibles gel tardif)',sec:'Faible à modérée (réduction 42% rendement sous déficit selon INRA Annoceur)',prix:'4-10',pep:'Très large (pépinières agréées ONSSA toutes régions)',ori:'USA (West Virginia, 1890)',rav:'Carpocapse, Puceron lanigère, Cochenille',mal:'Tavelure, Oïdium, Feu bactérien',trt:'Confusion sexuelle carpocapse, fongicides homologués, cuivre (feu bactérien)',sol:'Limoneux à limono-argileux, profond, bien drainé',notes:'Variété de base dominante du verger marocain; composante Label Pomme de Midelt (IGP); souplesse d\'adaptation mais performances réduites < 800m'  },
+  {v:'Gala',ar:'غالا',c:'Pommier',roi:5,rdt:'25-40 t/ha',ca:175000,eau:0,n:0,altMin:600,altMax:1600,pluvMin:0,hf:0,gel:'Modérée',sec:'Faible (maintien rendement sous déficit 50% ETc selon INRA Annoceur, Royal Gala)',prix:'5-12',pep:'Large (pépinières agréées ONSSA Midelt, Béni Mellal, Azilal)',ori:'Nouvelle-Zélande (croisement Golden Delicious × Kidd\'s Orange Red)',rav:'Carpocapse, Puceron lanigère, Cochenille',mal:'Tavelure, Oïdium',trt:'Confusion sexuelle carpocapse, fongicides homologués ONSSA',sol:'Limoneux, profond, bien drainé, riche en MO',notes:'Bonne tolérance relative au stress hydrique (cv. Burki Gala, INRA Annoceur); forte demande export fruit coloré rouge; maturité précoce avantage concurrentiel'  },
+  {v:'Anna',ar:'تفاح عنا',c:'Pommier',roi:5,rdt:'15-25 t/ha (qualité moindre vs altitude, conservation réduite)',ca:95000,eau:0,n:0,altMin:200,altMax:800,pluvMin:0,hf:0,gel:'Modérée (floraison précoce févr. = risque gel tardif)',sec:'Modérée',prix:'3-8',pep:'Disponible (pépinières agréées ONSSA, zones Souss et plaines)',ori:'Israël (sélection Beer Yaacov, 1959)',rav:'Carpocapse, Puceron lanigère',mal:'Tavelure, Oïdium',trt:'Fongicides homologués ONSSA; confusion sexuelle carpocapse; mesures prophylactiques',sol:'Limoneux à limono-sableux, bien drainé',notes:'Maturité 1ère semaine juillet; fruit 80-120g, coloré rouge sur fond vert-clair; floraison dès 2ème décade février; uniquement viable < 800m d\'altitude'  },
+  {v:'Dorsett Golden',ar:'تفاح دورسيت',c:'Pommier',roi:5,rdt:'15-25 t/ha',ca:90000,eau:0,n:0,altMin:200,altMax:800,pluvMin:0,hf:0,gel:'Modérée (floraison précoce = sensibilité gel tardif)',sec:'Modérée',prix:'4-9',pep:'Disponible (pépinières agréées ONSSA zones Souss, Haouz, Tadla)',ori:'Bahamas/USA (sélection faible froid, 1953)',rav:'Carpocapse, Puceron lanigère',mal:'Tavelure, Oïdium',trt:'Fongicides homologués ONSSA; confusion sexuelle carpocapse',sol:'Limoneux, bien drainé',notes:'Maturité ≈10 jours après Anna; fruit vert-jaunâtre, conservation 4-6 semaines; meilleur pollinisateur pour Anna (INRA Maroc 1998); complément dans même verger'  },
+  {v:'O\'Neal',ar:'ميرتيل أونيل',c:'Myrtille',roi:5,rdt:'15-20 t/ha (sous serre Maroc)',ca:600000,eau:0,n:0,altMin:0,altMax:400,pluvMin:0,hf:0,gel:'Modérée (floraison précoce sensible gel tardif)',sec:'Très faible',prix:'40-80 (export, contre-saison)',pep:'Disponible via pépinières spécialisées fruits rouges (Loukkos, Souss)',ori:'Southern Highbush, USA',rav:'Thrips, drosophile (D. suzukii), pucerons',mal:'Botrytis, pourriture racinaire (Phytophthora)',trt:'Gestion climatique serre, fongicides homologués ONSSA, hygiène irrigation',sol:'Substrat acide (tourbe/pin) ou sol pH 4,5-5,2 très drainé, riche en MO',notes:'Southern Highbush précoce, adaptée aux hivers doux du Souss/Moulouya; variété déjà utilisée dans les projets myrtille Maroc'  },
+  {v:'Misty',ar:'ميرتيل ميستي',c:'Myrtille',roi:5,rdt:'15-20 t/ha',ca:600000,eau:0,n:0,altMin:0,altMax:400,pluvMin:0,hf:0,gel:'Modérée',sec:'Très faible',prix:'40-80',pep:'Variété fréquente dans les projets myrtille au Maroc',ori:'Southern Highbush, USA',rav:'Thrips, pucerons, Drosophile',mal:'Botrytis, maladies racinaires',trt:'Gestion microclimat serre, fongicides homologués, hygiène rigoureuse',sol:'Substrat acide pH 4,5-5,2, très drainé',notes:'Southern Highbush très utilisée en zones à hiver doux (Souss, Loukkos); recommandée pour précocité'  },
+  {v:'Star',ar:'ميرتيل ستار',c:'Myrtille',roi:5,rdt:'15-20 t/ha',ca:600000,eau:0,n:0,altMin:0,altMax:400,pluvMin:0,hf:0,gel:'Modérée',sec:'Très faible',prix:'40-80',pep:'Présente chez pépiniéristes spécialisés',ori:'Southern Highbush, USA (brevet Star)',rav:'Thrips, Drosophile',mal:'Botrytis',trt:'Fongicides homologués; gestion climatique',sol:'Substrat acide pH 4,5-5,2',notes:'Southern Highbush avec faible besoin en froid; très utilisée en climats chauds, bon calibre et fermeté'  },
+  {v:'Sharpblue',ar:'ميرتيل شارب بلو',c:'Myrtille',roi:5,rdt:'15-20 t/ha',ca:600000,eau:0,n:0,altMin:0,altMax:400,pluvMin:0,hf:0,gel:'Plus sensible (floraison très précoce)',sec:'Très faible',prix:'40-80',pep:'Courante dans les vergers myrtille Maroc',ori:'Southern Highbush, USA',rav:'Thrips, Drosophile',mal:'Botrytis',trt:'Fongicides homologués; ventilation serres',sol:'Substrat acide pH 4,5-5,2',notes:'Très faible besoin en froid; intéressante pour les zones les plus chaudes'  },
+  {v:'Brightwell',ar:'ميرتيل برايتويل',c:'Myrtille',roi:5,rdt:'15-20 t/ha',ca:600000,eau:0,n:0,altMin:0,altMax:400,pluvMin:0,hf:0,gel:'Modérée',sec:'Très faible',prix:'40-80',pep:'Présente dans certains projets récents (Rabbiteye)',ori:'Rabbiteye, USA',rav:'Thrips, Drosophile',mal:'Botrytis',trt:'Fongicides homologués; maîtrise charge',sol:'Sol/substrat acide pH 4,5-5,5, bien drainé',notes:'Rabbiteye plus tolérante au pH et à la chaleur; intéressante pour prolonger la saison'  },
+  {v:'Hass',ar:'هاس',c:'Avocat',roi:5,rdt:'10-15 t/ha',ca:225000,eau:0,n:0,altMin:0,altMax:600,pluvMin:0,hf:0,gel:'Modérée (-1 à -3°C dégâts peau)',sec:'Faible (chute fruits)',prix:'15-25',pep:'Très large (71,8% production nationale)',ori:'Californie, USA (1925)',rav:'Thrips, pucerons, mineuse',mal:'Phytophthora cinnamomi (pourriture racinaire), anthracnose',trt:'Fongicides phosphite + métalaxyl (Phytophthora); cuivre (anthracnose)',sol:'Sablo-limoneux à sablo-argileux, profond, bien drainé',notes:'Variété dominante Maroc (71,8% production); peau noire mûr; longue conservation; prix élevé export Europe'  },
+  {v:'Fuerte',ar:'فويرتي',c:'Avocat',roi:6,rdt:'8-12 t/ha',ca:160000,eau:0,n:0,altMin:0,altMax:600,pluvMin:0,hf:0,gel:'Élevée (-2°C dégâts)',sec:'Faible',prix:'10-18',pep:'Large (12,5% production nationale, utilisé greffage)',ori:'Californie (croisement Mexicaine x Guatemala)',rav:'Thrips, pucerons',mal:'Phytophthora, anthracnose',trt:'Phosphites + métalaxyl',sol:'Sablo-limoneux, bien drainé',notes:'Peau verte au mûr; marché local + porte-greffe; sensible gel'  },
+  {v:'Zutano',ar:'زوتانو',c:'Avocat',roi:7,rdt:'5-8 t/ha',ca:80000,eau:0,n:0,altMin:0,altMax:600,pluvMin:0,hf:0,gel:'Modérée',sec:'Faible',prix:'8-15',pep:'Large (7% production, porte-greffe principal)',ori:'Californie',rav:'Thrips',mal:'Phytophthora',trt:'Fongicides racinaires',sol:'Sablo-limoneux, drainé',notes:'Type B pollinisateur Hass; semis porte-greffe; fruit petit utilisé localement'  },
+  {v:'Lamb Hass',ar:'لام هاس',c:'Avocat',roi:5,rdt:'12-18 t/ha',ca:350000,eau:0,n:0,altMin:0,altMax:600,pluvMin:0,hf:0,gel:'Modérée',sec:'Faible',prix:'20-35 (prix record 33 DH/kg 2023)',pep:'En forte progression (5,5% production nationale)',ori:'Nouvelle-Zélande (clone Hass tardif)',rav:'Thrips, mineuse',mal:'Phytophthora, anthracnose',trt:'Phosphites + métalaxyl',sol:'Sablo-limoneux, drainé',notes:'Clone Hass tardif (prolonge saison 1-2 mois); prix record 33 DH/kg 2023; consommation d\'eau championne'  },
+  {v:'Bacon',ar:'باكون',c:'Avocat',roi:5,rdt:'6-10 t/ha',ca:120000,eau:0,n:0,altMin:0,altMax:600,pluvMin:0,hf:0,gel:'Modérée',sec:'Faible',prix:'10-18',pep:'Disponible (3,2% production nationale)',ori:'Californie',rav:'Thrips',mal:'Phytophthora',trt:'Fongicides racinaires',sol:'Sablo-limoneux, drainé',notes:'Type B pollinisateur Hass; peau verte; marché local'  },
+  {v:'Spunta',ar:'سبنتا',c:'PommeDeTerre',roi:5,rdt:'25-35 t/ha (moyenne Maroc 22 t/ha)',ca:70000,eau:0,n:0,altMin:0,altMax:1200,pluvMin:0,hf:0,gel:'Élevée (plantules < 5°C)',sec:'Faible (réduction rendement drastique)',prix:'1,5-3',pep:'Très large (semences certifiées ONSSA)',ori:'Pays-Bas (1960)',rav:'Doryphore, pucerons vecteurs PVY',mal:'Mildiou (Phytophthora), Rhizoctone, virus (PVY, PLRV)',trt:'Fongicides protecteurs (mildiou) + systémiques; semences saines certifiées',sol:'Limoneux à sableux, profond, bien drainé, riche en MO',notes:'Variété dominante Maroc (industrie frites); cycle 100-120 jours; bonne conservation'  },
+  {v:'Désirée',ar:'ديزيري',c:'PommeDeTerre',roi:5,rdt:'25-35 t/ha',ca:90000,eau:0,n:0,altMin:0,altMax:1200,pluvMin:0,hf:0,gel:'Élevée',sec:'Faible',prix:'2-4',pep:'Large',ori:'Pays-Bas',rav:'Doryphore, pucerons',mal:'Mildiou, rhizoctone, virus',trt:'Fongicides + semences certifiées',sol:'Limoneux à sableux, bien drainé',notes:'Peau rouge attrayante marché frais; bonne qualité culinaire'  },
+  {v:'Mondial',ar:'مونديال',c:'PommeDeTerre',roi:5,rdt:'30-40 t/ha',ca:100000,eau:0,n:0,altMin:0,altMax:1200,pluvMin:0,hf:0,gel:'Élevée',sec:'Faible',prix:'2-4',pep:'Disponible',ori:'Pays-Bas',rav:'Doryphore',mal:'Mildiou, virus',trt:'Fongicides, semences certifiées',sol:'Limoneux bien drainé',notes:'Rendement élevé, qualité bonne'  },
+  {v:'Argos',ar:'أرغوس',c:'PommeDeTerre',roi:5,rdt:'30-40 t/ha',ca:95000,eau:0,n:0,altMin:0,altMax:1200,pluvMin:0,hf:0,gel:'Élevée',sec:'Faible',prix:'1,8-3,5',pep:'Disponible',ori:'Pays-Bas',rav:'Doryphore, pucerons',mal:'Mildiou, rhizoctone',trt:'Fongicides systémiques',sol:'Limoneux drainé',notes:'Résistance partielle maladies foliaires'  },
+  {v:'Hermosa',ar:'هيرموسا',c:'PommeDeTerre',roi:5,rdt:'25-35 t/ha',ca:85000,eau:0,n:0,altMin:0,altMax:1200,pluvMin:0,hf:0,gel:'Élevée',sec:'Faible',prix:'2-4',pep:'Disponible',ori:'Pays-Bas',rav:'Doryphore',mal:'Mildiou',trt:'Fongicides',sol:'Limoneux à sableux',notes:'Qualité table excellente'  },
+  {v:'Giza 6',ar:'جيزة 6',c:'Oignon',roi:5,rdt:'25-40 t/ha',ca:100000,eau:0,n:0,altMin:0,altMax:800,pluvMin:0,hf:0,gel:'Modérée (< 5°C plantules)',sec:'Faible (fissures bulbes)',prix:'2-5 (record 12 DH/kg 2025)',pep:'Large (semences hybrides importées/certifiées)',ori:'Égypte',rav:'Thrips, doryphore mineur',mal:'Pourriture blanche (Sclerotium), fusariose, mildiou',trt:'Fongicides (tébuconazole) + rotation cultures',sol:'Limoneux à sableux, fertile, bien drainé, riche MO',notes:'Variété jaune conservation longue; très prisée export Europe; rentabilité jusqu\'à 9x supérieure irrigation localisée'  },
+  {v:'Valiant',ar:'فاليانت',c:'Oignon',roi:5,rdt:'30-45 t/ha',ca:120000,eau:0,n:0,altMin:0,altMax:800,pluvMin:0,hf:0,gel:'Modérée',sec:'Faible',prix:'2-6',pep:'Disponible',ori:'Hollande',rav:'Thrips',mal:'Pourriture blanche',trt:'Fongicides + rotation',sol:'Limoneux fertile bien drainé',notes:'Calibre uniforme, bonne conservation'  },
+  {v:'Texas Grano 502',ar:'تكساس غرانو',c:'Oignon',roi:5,rdt:'25-35 t/ha',ca:140000,eau:0,n:0,altMin:0,altMax:800,pluvMin:0,hf:0,gel:'Modérée',sec:'Faible',prix:'3-7 (primeur)',pep:'Disponible primeur',ori:'USA',rav:'Thrips',mal:'Fusariose',trt:'Rotation + fongicides',sol:'Sableux à limoneux, drainé',notes:'Cycle court primeur; bulbe allongé jaune'  },
+  {v:'Red Creole',ar:'ريد كرول',c:'Oignon',roi:5,rdt:'25-35 t/ha',ca:120000,eau:0,n:0,altMin:0,altMax:800,pluvMin:0,hf:0,gel:'Modérée',sec:'Faible',prix:'3-6',pep:'Disponible rouge',ori:'USA',rav:'Thrips',mal:'Pourriture blanche',trt:'Fongicides',sol:'Limoneux drainé',notes:'Oignon rouge populaire marché local'  },
+  {v:'Sochaux',ar:'سوشو',c:'Oignon',roi:5,rdt:'30-45 t/ha',ca:110000,eau:0,n:0,altMin:0,altMax:800,pluvMin:0,hf:0,gel:'Modérée',sec:'Faible',prix:'2-5',pep:'Disponible',ori:'France',rav:'Thrips',mal:'Pourriture blanche',trt:'Rotation + fongicides',sol:'Limoneux fertile',notes:'Bonne conservation, calibre régulier'  },
+  {v:'Massira',ar:'ماسيرا',c:'HaricotVert',roi:5,rdt:'15-25 t/ha plein champ / 30-40 t/ha serre',ca:150000,eau:0,n:0,altMin:0,altMax:400,pluvMin:0,hf:0,gel:'Élevée (< 8°C dommages)',sec:'Faible',prix:'5-12 (export Europe)',pep:'Semences certifiées (Syngenta, Hazera Maroc)',ori:'Maroc (sélection locale)',rav:'Pucerons, doryphore, thrips',mal:'Anthracnose, rhizoctone, virus BCMV',trt:'Fongicides homologués (anthracnose), semences traitées, rotation',sol:'Limoneux à sableux, léger, bien drainé, pH 5,5-6,8',notes:'Variété locale performante export; 2 cycles/an possible; Maroc 2e rendement mondial (23,7 t/ha)'  },
+  {v:'Canner',ar:'كانر',c:'HaricotVert',roi:5,rdt:'15-20 t/ha',ca:120000,eau:0,n:0,altMin:0,altMax:400,pluvMin:300,hf:0,gel:'Élevée',sec:'Faible',prix:'4-10',pep:'Semences disponibles',ori:'USA',rav:'Pucerons',mal:'Anthracnose',trt:'Rotation, fongicides',sol:'Sableux à limoneux, drainé pH 5,5-6,8',notes:'Gousse ronde productive'  },
+  {v:'Paulista',ar:'بوليستا',c:'HaricotVert',roi:5,rdt:'30-40 t/ha serre',ca:240000,eau:0,n:0,altMin:0,altMax:400,pluvMin:300,hf:0,gel:'Élevée',sec:'Faible',prix:'6-12',pep:'Syngenta Maroc',ori:'Brésil',rav:'Thrips, pucerons',mal:'Rhizoctone',trt:'Semences traitées',sol:'Léger bien drainé pH 5,5-6,8',notes:'Rustique, stress tolérant, excellente productivité'  },
+  {v:'Mammouth',ar:'ماموث',c:'HaricotVert',roi:5,rdt:'15-25 t/ha',ca:140000,eau:0,n:0,altMin:0,altMax:400,pluvMin:300,hf:0,gel:'Élevée',sec:'Faible',prix:'4-10',pep:'Disponible',ori:'USA',rav:'Pucerons',mal:'Anthracnose',trt:'Fongicides',sol:'Sableux limoneux pH 5,5-6,8',notes:'Très productive variété naine'  },
+  {v:'Mousseline',ar:'موسلين',c:'HaricotVert',roi:5,rdt:'15-25 t/ha',ca:160000,eau:0,n:0,altMin:0,altMax:400,pluvMin:300,hf:0,gel:'Élevée',sec:'Faible',prix:'5-12',pep:'Disponible premium',ori:'France',rav:'Pucerons',mal:'Anthracnose',trt:'Rotation',sol:'Limoneux léger pH 5,5-6,8',notes:'Gousse fine haut de gamme'  },
+  {v:'Byblos F1',ar:'بيبلوس F1',c:'Courgette',roi:5,rdt:'25-40 t/ha',ca:140000,eau:0,n:0,altMin:0,altMax:500,pluvMin:0,hf:0,gel:'Élevée (< 8°C dommages jeunes plants)',sec:'Faible',prix:'3-8',pep:'Syngenta, Vilmorin Maroc',ori:'Hybride F1 (Syngenta/Vilmorin)',rav:'Pucerons, aleurodes, thrips',mal:'Oïdium, mildiou, virus ZYMV/WMV',trt:'Fongicides (oïdium), insecticides homologués, semences résistantes virus',sol:'Limoneux à sableux, fertile, bien drainé, pH 6-7',notes:'Hybride F1 résistant virus + oïdium; très utilisé export Maroc'  },
+  {v:'Clarita F1',ar:'كلاريت F1',c:'Courgette',roi:5,rdt:'30-45 t/ha',ca:160000,eau:0,n:0,altMin:0,altMax:500,pluvMin:300,hf:0,gel:'Élevée',sec:'Faible',prix:'3-8',pep:'Rijk Zwaan Maroc',ori:'Hybride F1 (Rijk Zwaan)',rav:'Aleurodes, pucerons',mal:'Oïdium, virus',trt:'Insecticides + fongicides',sol:'Limoneux drainé pH 6-7',notes:'Uniformité excellente, tolérance chaleur'  },
+  {v:'Dario F1',ar:'داريو F1',c:'Courgette',roi:5,rdt:'25-40 t/ha',ca:140000,eau:0,n:0,altMin:0,altMax:500,pluvMin:300,hf:0,gel:'Élevée',sec:'Faible',prix:'3-8',pep:'Sakata Maroc',ori:'Hybride F1 (Sakata)',rav:'Pucerons, aleurodes',mal:'Oïdium',trt:'Fongicides',sol:'Limoneux pH 6-7',notes:'Résistance oïdium, fruit homogène'  },
+  {v:'Diamant F1',ar:'ديامانت F1',c:'Courgette',roi:5,rdt:'30-45 t/ha',ca:170000,eau:0,n:0,altMin:0,altMax:500,pluvMin:300,hf:0,gel:'Élevée',sec:'Faible',prix:'4-10',pep:'Disponible Maroc',ori:'Hybride F1 (France)',rav:'Aleurodes',mal:'Virus ZYMV',trt:'Insecticides + résistances',sol:'Limoneux fertile pH 6-7',notes:'Fruit brillant premium, calibre régulier'  },
+  {v:'Kokopelli',ar:'كوكوبيلي',c:'Courgette',roi:5,rdt:'20-30 t/ha',ca:120000,eau:0,n:0,altMin:0,altMax:500,pluvMin:300,hf:0,gel:'Élevée',sec:'Modérée',prix:'3-7 (bio)',pep:'Semences bio (Kokopelli Maroc)',ori:'Population ancienne (Kokopelli semences)',rav:'Pucerons',mal:'Oïdium, virus',trt:'Bio (purins, rotation)',sol:'Tout sol fertile drainé pH 6-7',notes:'Variété rustique traditionnelle, idéale bio/local'  },
+  {v:'Crimson Sweet',ar:'كريمزون سويت',c:'Pasteque',roi:5,rdt:'30-50 t/ha',ca:120000,eau:0,n:0,altMin:0,altMax:600,pluvMin:0,hf:0,gel:'Modérée',sec:'Faible (réduit calibre)',prix:'1,5-4',pep:'Syngenta, Nunhems Maroc',ori:'USA (1963)',rav:'Aleurodes, pucerons, doryphore',mal:'Fusariose, verticilliose, anthracnose',trt:'Porte-greffes résistants + fongicides',sol:'Sableux à limoneux, fertile, drainé pH 6-7',notes:'Fruits 8-12 kg, chair rouge 12% Brix; calibre commercial élevé; très populaire Maroc'  },
+  {v:'Sugar Baby',ar:'شوغر بيبي',c:'Pasteque',roi:5,rdt:'25-40 t/ha',ca:80000,eau:0,n:0,altMin:0,altMax:600,pluvMin:0,hf:0,gel:'Modérée',sec:'Faible',prix:'1-3',pep:'Nunhems (Fire Ball, Perla Negra Maroc)',ori:'USA (1956)',rav:'Aleurodes',mal:'Anthracnose',trt:'Fongicides',sol:'Sableux limoneux drainé',notes:'Petits fruits pratiques (4-8 kg); populaire local'  },
+  {v:'Farao F1',ar:'فاراو F1',c:'Pasteque',roi:5,rdt:'35-50 t/ha',ca:140000,eau:0,n:0,altMin:0,altMax:600,pluvMin:0,hf:0,gel:'Modérée',sec:'Faible',prix:'2-5',pep:'Syngenta Maroc',ori:'Hybride F1 (Syngenta)',rav:'Aleurodes',mal:'Fusariose',trt:'Porte-greffes',sol:'Limoneux drainé',notes:'Sans pépins, haut rendement export'  },
+  {v:'Dumara F1',ar:'دومارا F1',c:'Pasteque',roi:5,rdt:'35-50 t/ha',ca:140000,eau:0,n:0,altMin:0,altMax:600,pluvMin:0,hf:0,gel:'Modérée',sec:'Faible',prix:'2-5',pep:'Rijk Zwaan Maroc',ori:'Hybride F1 (Rijk Zwaan)',rav:'Aleurodes',mal:'Anthracnose',trt:'Fongicides',sol:'Limoneux drainé',notes:'Calibre homogène, transport longue distance'  },
+  {v:'Charleston Gray',ar:'تشارلستون غراي',c:'Pasteque',roi:5,rdt:'30-45 t/ha',ca:90000,eau:0,n:0,altMin:0,altMax:600,pluvMin:0,hf:0,gel:'Modérée',sec:'Faible',prix:'1,2-3',pep:'Terranova, Syngenta',ori:'USA (1955)',rav:'Doryphore',mal:'Anthracnose',trt:'Fongicides',sol:'Sableux limoneux',notes:'Fruits allongés 10-15 kg; populaire local'  },
+  {v:'California Wonder',ar:'كاليفورنيا ووندر',c:'Poivron',roi:5,rdt:'35-50 t/ha plein champ; 60-80 t/ha serre',ca:200000,eau:0,n:0,altMin:0,altMax:600,pluvMin:0,hf:0,gel:'Élevée (< 12°C stress)',sec:'Faible (chute fleurs/fruits)',prix:'4-10',pep:'Très répandu; plants en plateaux',ori:'USA (variété bloc carré)',rav:'Pucerons, aleurodes, thrips, mineuse',mal:'Mildiou, oïdium, virus (TMV, TSWV)',trt:'Protection intégrée (pièges, auxiliaires) + produits homologués',sol:'Limoneux profond, riche MO, pH 6-6,8',notes:'Type bloc classique; utilisé comme référence technique Maroc'  },
+  {v:'Lamuyo',ar:'لامويو',c:'Poivron',roi:5,rdt:'40-60 t/ha',ca:220000,eau:0,n:0,altMin:0,altMax:600,pluvMin:0,hf:0,gel:'Élevée',sec:'Faible',prix:'4-10',pep:'Très répandu Maroc',ori:'Espagne (type demi-long)',rav:'Pucerons, aleurodes',mal:'Oïdium, virus',trt:'Lutte intégrée',sol:'Limoneux profond, pH 6-6,8',notes:'Type demi-long très demandé (Sous-Massa)'  },
+  {v:'Orlando F1',ar:'أورلاندو F1',c:'Poivron',roi:5,rdt:'80-120 t/ha serre',ca:500000,eau:0,n:0,altMin:0,altMax:600,pluvMin:0,hf:0,gel:'Élevée',sec:'Faible',prix:'5-12',pep:'Pépinières spécialisées Souss',ori:'Hybride F1 (Maroc/Eurosemences)',rav:'Aleurodes, thrips, Tuta absolu (si mix tomate)',mal:'Oïdium, virus',trt:'Biocontrôle + chimie raisonnée',sol:'Sol de serre structuré, riche, pH 6-6,8',notes:'Bloc export, résistant virus, adapté serres Maroc'  },
+  {v:'Maestro F1',ar:'مايسترو F1',c:'Poivron',roi:5,rdt:'80-120 t/ha',ca:500000,eau:0,n:0,altMin:0,altMax:600,pluvMin:0,hf:0,gel:'Élevée',sec:'Faible',prix:'5-12',pep:'Pépinières Souss',ori:'Hybride F1 (Syngenta/Vilmorin)',rav:'Aleurodes, thrips',mal:'Oïdium, virus',trt:'Biocontrôle + chimie raisonnée',sol:'Sol de serre, riche, pH 6-6,8',notes:'Bloc export résistances virus, haut rendement'  },
+  {v:'Doux d\'Espagne',ar:'حلو إسبانيا',c:'Poivron',roi:5,rdt:'30-45 t/ha',ca:170000,eau:0,n:0,altMin:0,altMax:600,pluvMin:0,hf:0,gel:'Élevée',sec:'Faible',prix:'4-9',pep:'Très courant Maroc',ori:'Espagne (type corne de bœuf)',rav:'Pucerons, aleurodes',mal:'Mildiou, oïdium',trt:'Fongicides',sol:'Limoneux profond, pH 6-6,8',notes:'Poivron doux long très demandé marché traditionnel'  },
+  {v:'Amalou',ar:'شعير Amalou',c:'Orge',roi:5,rdt:'0,8-1,5 t/ha en bour sec; 2-3 t/ha en zones favorables',ca:4500,eau:0,n:0,altMin:0,altMax:1800,pluvMin:0,hf:0,gel:'Bonne tolérance (plus résistante que blé)',sec:'Élevée (objet de sélection INRA)',prix:'2-3',pep:'Semences sélectionnées (SONACOS/coopératives)',ori:'Création variétale marocaine (INRA)',rav:'Pucerons, cicadelles (transmission virus)',mal:'Helminthosporiose, rouilles, oïdium',trt:'Variétés tolérantes; fongicides si forte pression',sol:'Sols légers à moyens, bien drainés, tolère sols pauvres',notes:'Variété INRA adaptée zones arides/semi-arides; bonne tolérance sécheresse et froid'  },
+  {v:'Oussama',ar:'شعير Oussama',c:'Orge',roi:5,rdt:'0,8-1,5 t/ha en bour sec; 2-3 t/ha en zones favorables',ca:4500,eau:0,n:0,altMin:0,altMax:1800,pluvMin:0,hf:0,gel:'Bonne tolérance (plus résistante que blé)',sec:'Élevée (objet de sélection INRA)',prix:'2-3',pep:'Semences sélectionnées (SONACOS/coopératives)',ori:'Création variétale marocaine (INRA)',rav:'Pucerons, cicadelles (transmission virus)',mal:'Helminthosporiose, rouilles, oïdium',trt:'Variétés tolérantes; fongicides si forte pression',sol:'Sols légers à moyens, bien drainés, tolère sols pauvres',notes:'Variété INRA adaptée zones arides/semi-arides; bonne tolérance sécheresse et froid'  },
+  {v:'Assiya',ar:'شعير Assiya',c:'Orge',roi:5,rdt:'0,8-1,5 t/ha en bour sec; 2-3 t/ha en zones favorables',ca:4500,eau:0,n:0,altMin:0,altMax:1800,pluvMin:0,hf:0,gel:'Bonne tolérance (plus résistante que blé)',sec:'Élevée (objet de sélection INRA)',prix:'2-3',pep:'Semences sélectionnées (SONACOS/coopératives)',ori:'Création variétale marocaine (INRA)',rav:'Pucerons, cicadelles (transmission virus)',mal:'Helminthosporiose, rouilles, oïdium',trt:'Variétés tolérantes; fongicides si forte pression',sol:'Sols légers à moyens, bien drainés, tolère sols pauvres',notes:'Variété INRA adaptée zones arides/semi-arides; bonne tolérance sécheresse et froid'  },
+  {v:'Chifaa',ar:'شعير Chifaa',c:'Orge',roi:5,rdt:'0,8-1,5 t/ha en bour sec; 2-3 t/ha en zones favorables',ca:4500,eau:0,n:0,altMin:0,altMax:1800,pluvMin:0,hf:0,gel:'Bonne tolérance (plus résistante que blé)',sec:'Élevée (objet de sélection INRA)',prix:'2-3',pep:'Semences sélectionnées (SONACOS/coopératives)',ori:'Création variétale marocaine (INRA)',rav:'Pucerons, cicadelles (transmission virus)',mal:'Helminthosporiose, rouilles, oïdium',trt:'Variétés tolérantes; fongicides si forte pression',sol:'Sols légers à moyens, bien drainés, tolère sols pauvres',notes:'Variété INRA adaptée zones arides/semi-arides; bonne tolérance sécheresse et froid'  },
+  {v:'Khnata',ar:'شعير Khnata',c:'Orge',roi:5,rdt:'0,8-1,5 t/ha en bour sec; 2-3 t/ha en zones favorables',ca:4500,eau:0,n:0,altMin:0,altMax:1800,pluvMin:0,hf:0,gel:'Bonne tolérance (plus résistante que blé)',sec:'Élevée (objet de sélection INRA)',prix:'2-3',pep:'Semences sélectionnées (SONACOS/coopératives)',ori:'Création variétale marocaine (INRA)',rav:'Pucerons, cicadelles (transmission virus)',mal:'Helminthosporiose, rouilles, oïdium',trt:'Variétés tolérantes; fongicides si forte pression',sol:'Sols légers à moyens, bien drainés, tolère sols pauvres',notes:'Variété INRA adaptée zones arides/semi-arides; bonne tolérance sécheresse et froid'  },
+  {v:'Anza',ar:'عنزة',c:'Mais',roi:5,rdt:'8-12 t/ha grain; 40-60 t/ha ensilage',ca:30000,eau:0,n:0,altMin:0,altMax:1000,pluvMin:0,hf:0,gel:'Modérée',sec:'Faible',prix:'2,5-3,5 (grain)',pep:'Semences hybrides (MAS Seeds, Pioneer)',ori:'INRA Maroc',rav:'Pucerons, doryphore, sésamie',mal:'Hélicoverpa, fusariose, charbon',trt:'Insecticides ciblés + rotation',sol:'Limoneux à argileux, fertile, bien drainé',notes:'Cycle court 110-120 jours; bonne adaptation Maroc irrigué (Gharb, Tadla)'  },
+  {v:'Almaz',ar:'المز',c:'Mais',roi:5,rdt:'9-13 t/ha grain',ca:32000,eau:0,n:0,altMin:0,altMax:1000,pluvMin:400,hf:0,gel:'Modérée',sec:'Faible',prix:'2,5-3,5',pep:'Syngenta, Pioneer Maroc',ori:'Hybride denté (INRA/Syngenta)',rav:'Pucerons, sésamie',mal:'Fusariose',trt:'Rotation',sol:'Limoneux fertile',notes:'Type denté performant en irrigué'  },
+  {v:'Aristo',ar:'أريستو',c:'Mais',roi:5,rdt:'7-11 t/ha',ca:28000,eau:0,n:0,altMin:0,altMax:1200,pluvMin:450,hf:0,gel:'Modérée',sec:'Bonne',prix:'2,5-3,5',pep:'MAS Seeds Maroc',ori:'Hybride flint (MAS Seeds)',rav:'Doryphore',mal:'Hélicoverpa',trt:'Insecticides',sol:'Limoneux à sableux',notes:'Cycle court, bonne tolérance sécheresse'  },
+  {v:'Choisi',ar:'شويزي',c:'Mais',roi:5,rdt:'8-12 t/ha',ca:30000,eau:0,n:0,altMin:0,altMax:1000,pluvMin:400,hf:0,gel:'Modérée',sec:'Faible',prix:'2,5-3,5',pep:'INRA / coopératives',ori:'INRA Maroc',rav:'Sésamie',mal:'Charbon',trt:'Rotation',sol:'Limoneux fertile',notes:'Sélection INRA pour conditions marocaines'  },
+  {v:'Cisko',ar:'سيسكو',c:'Mais',roi:5,rdt:'10-14 t/ha',ca:35000,eau:0,n:0,altMin:0,altMax:1000,pluvMin:450,hf:0,gel:'Modérée',sec:'Modérée',prix:'2,5-3,5',pep:'Pioneer Maroc',ori:'Pioneer (hybride denté)',rav:'Doryphore',mal:'Fusariose',trt:'Rotation',sol:'Limoneux fertile',notes:'Haut potentiel productif en irrigué'  },
+  {v:'Taounate',ar:'طاونات',c:'PoisChiche',roi:5,rdt:'1,2-2 t/ha (bour); 2,5-3 t/ha favorable',ca:15000,eau:0,n:0,altMin:200,altMax:1200,pluvMin:0,hf:0,gel:'Bonne tolérance',sec:'Élevée (cycle court, précocité)',prix:'7-12',pep:'INRA/coopératives (semences certifiées)',ori:'INRA Maroc',rav:'Bruchides (stockage), pucerons',mal:'Anthracnose (résistante), ascochyta',trt:'Semences traitées + rotation',sol:'Limoneux à sableux, sols pauvres, bien drainés',notes:'Cycle court, tolérante sécheresse, résistante anthracnose, récolte mécanique'  },
+  {v:'Arifi',ar:'عريفي',c:'PoisChiche',roi:5,rdt:'1-2 t/ha',ca:14000,eau:0,n:0,altMin:200,altMax:1400,pluvMin:0,hf:0,gel:'Bonne',sec:'Élevée',prix:'7-12',pep:'INRA/coop',ori:'INRA Maroc',rav:'Bruchides',mal:'Ascochyta',trt:'Rotation',sol:'Sols légers pauvres',notes:'Bonne adaptation bour semi-aride'  },
+  {v:'Bochra',ar:'بشرة',c:'PoisChiche',roi:5,rdt:'1,5-2,5 t/ha',ca:17500,eau:0,n:0,altMin:200,altMax:1000,pluvMin:0,hf:0,gel:'Bonne',sec:'Bonne',prix:'7-12',pep:'INRA',ori:'INRA Maroc',rav:'Pucerons',mal:'Anthracnose',trt:'Semences traitées',sol:'Limoneux',notes:'Zones favorables, bonne productivité'  },
+  {v:'Boucherif',ar:'بوشريف',c:'PoisChiche',roi:5,rdt:'1-1,8 t/ha',ca:13000,eau:0,n:0,altMin:300,altMax:1400,pluvMin:0,hf:0,gel:'Bonne',sec:'Élevée',prix:'7-12',pep:'INRA',ori:'INRA Maroc',rav:'Bruchides',mal:'Ascochyta',trt:'Rotation',sol:'Sols pauvres légers',notes:'Adaptation semi-aride'  },
+  {v:'Chtouka',ar:'شطوكة',c:'PoisChiche',roi:5,rdt:'0,8-1,5 t/ha',ca:12000,eau:0,n:0,altMin:400,altMax:1600,pluvMin:0,hf:0,gel:'Excellente',sec:'Très élevée',prix:'7-12',pep:'INRA zones arides',ori:'INRA Maroc',rav:'Pucerons',mal:'Ascochyta',trt:'Tolérance variétale',sol:'Sols pauvres sableux',notes:'Très rustique zones arides'  },
+  {v:'Hiba',ar:'هبة',c:'Feve',roi:5,rdt:'2,5-3,5 t/ha (sec); potentiel 45 q/ha',ca:20000,eau:0,n:0,altMin:200,altMax:1200,pluvMin:0,hf:0,gel:'Bonne tolérance',sec:'Bonne',prix:'6-10',pep:'INRA/coopératives (semences certifiées)',ori:'INRA Maroc (CRRA Meknès)',rav:'Pucerons noirs, bruches',mal:'Botrytis (résistante), anthracnose (résistante)',trt:'Semences traitées + rotation',sol:'Limoneux à argileux, sols moyens à riches',notes:'Résistante botrytis/anthracnose; rendement 30 q/ha vs Lobab 27 q/ha'  },
+  {v:'Yasmine',ar:'ياسمين',c:'Feve',roi:5,rdt:'2,3-3,5 t/ha; potentiel 35 q/ha',ca:22000,eau:0,n:0,altMin:200,altMax:1200,pluvMin:0,hf:0,gel:'Bonne',sec:'Bonne',prix:'6-10',pep:'INRA Meknès (sélection pedigree)',ori:'INRA Maroc (CRRA Meknès)',rav:'Pucerons, bruches',mal:'Botrytis (moy. rés.), anthracnose (moy.)',trt:'Rotation + variétés résistantes',sol:'Large adaptation agro-écologique',notes:'31 q/ha vs Lobab 27 q/ha; large adaptation Maroc'  },
+  {v:'Luz de Otono',ar:'لوز دي أوتونيو',c:'Feve',roi:5,rdt:'2-3 t/ha',ca:18000,eau:0,n:0,altMin:100,altMax:800,pluvMin:0,hf:0,gel:'Modérée',sec:'Modérée',prix:'6-10',pep:'Importées/répandues Maroc',ori:'Espagne',rav:'Pucerons',mal:'Botrytis',trt:'Fongicides',sol:'Limoneux à argileux',notes:'Précoce, adaptée automne-hiver'  },
+  {v:'Aguadulce',ar:'أغوادولسي',c:'Feve',roi:5,rdt:'2-3 t/ha',ca:18000,eau:0,n:0,altMin:100,altMax:1000,pluvMin:0,hf:0,gel:'Bonne',sec:'Modérée',prix:'6-10',pep:'Répandue Maroc',ori:'Espagne',rav:'Pucerons noirs',mal:'Botrytis, anthracnose',trt:'Rotation',sol:'Limoneux-argileux',notes:'Variété de référence, gousses longues'  },
+  {v:'Alfia Marseka',ar:'الفيا مرسكة',c:'Feve',roi:5,rdt:'2-3 t/ha',ca:18000,eau:0,n:0,altMin:200,altMax:1000,pluvMin:0,hf:0,gel:'Bonne',sec:'Bonne',prix:'6-10',pep:'Régional (Marseka)',ori:'Maroc (sélection locale)',rav:'Bruches',mal:'Botrytis',trt:'Rotation',sol:'Limoneux à argileux',notes:'Variété locale productive'  },
+  {v:'Extra',ar:'إكسترا',c:'Lentille',roi:5,rdt:'1,2-2 t/ha (potentiel 30 q/ha)',ca:16000,eau:0,n:0,altMin:200,altMax:800,pluvMin:0,hf:0,gel:'Bonne',sec:'Élevée',prix:'8-15',pep:'INRA/coopératives Zaër',ori:'INRA Maroc',rav:'Bruchides (stockage), pucerons',mal:'Rouille (résistante), ascochyta',trt:'Semences traitées + rotation',sol:'Limoneux légers, sols pauvres bien drainés',notes:'Résistante rouille; adaptée Zaër-Chaouia; sup. témoin L24'  },
+  {v:'Jemaat Shaim',ar:'جماعة شييم',c:'Lentille',roi:5,rdt:'1-1,8 t/ha (pot. 30 q/ha)',ca:14000,eau:0,n:0,altMin:0,altMax:600,pluvMin:0,hf:0,gel:'Bonne',sec:'Élevée',prix:'8-15',pep:'INRA Abda',ori:'INRA Maroc',rav:'Pucerons',mal:'Rouille (résistante)',trt:'Rotation',sol:'Sols sableux-limoneux',notes:'Adaptée Abda-Doukkala; résistante rouille'  },
+  {v:'Precoz',ar:'بريكوز',c:'Lentille',roi:5,rdt:'1,1-1,8 t/ha',ca:14000,eau:0,n:0,altMin:200,altMax:800,pluvMin:0,hf:0,gel:'Bonne',sec:'Bonne',prix:'8-15',pep:'Importée/répandue',ori:'Espagne (précoce)',rav:'Bruchides',mal:'Ascochyta',trt:'Semences traitées',sol:'Limoneux légers',notes:'Précoce, bonne adaptation'  },
+  {v:'Idlib',ar:'إدليب',c:'Lentille',roi:5,rdt:'0,9-1,6 t/ha',ca:13000,eau:0,n:0,altMin:400,altMax:1200,pluvMin:0,hf:0,gel:'Excellente',sec:'Très élevée',prix:'8-15',pep:'Zones arides',ori:'Syrie (importée Maroc)',rav:'Pucerons',mal:'Rouille',trt:'Tolérance',sol:'Sols pauvres légers',notes:'Rustique zones arides'  },
+  {v:'Robin',ar:'روبين',c:'Lentille',roi:5,rdt:'1,1-1,9 t/ha',ca:15000,eau:0,n:0,altMin:300,altMax:1000,pluvMin:0,hf:0,gel:'Bonne',sec:'Bonne',prix:'8-15',pep:'Importée',ori:'France (précoce)',rav:'Pucerons',mal:'Rouille',trt:'Fongicides si besoin',sol:'Limoneux légers',notes:'Précoce zones fraîches'  },
+  {v:'Attraktiva KWS',ar:'أتراكتيفا',c:'Betterave',roi:5,rdt:'70-100 t/ha racines; 14-18 t sucre/ha',ca:0,eau:0,n:0,altMin:0,altMax:500,pluvMin:0,hf:0,gel:'Modérée',sec:'Faible',prix:'0,5-0,8 (racines); sucre 4-6 DH/kg',pep:'KWS Maroc / SONACOS',ori:'KWS (Allemagne)',rav:'Nématodes (Heterodera schachtii), pucerons',mal:'Rhizomanie (résistante), cercosporiose',trt:'Variétés tolérantes + fongicides',sol:'Limoneux argileux à sableux, profonds, bien drainés',notes:'Triple tolérance (rhizomanie, nématodes Heterodera); rendement sucre élevé'  },
+  {v:'Shanon',ar:'شانون',c:'Betterave',roi:5,rdt:'75-105 t/ha',ca:52000,eau:0,n:0,altMin:0,altMax:500,pluvMin:0,hf:0,gel:'Modérée',sec:'Faible',prix:'0,5-0,8',pep:'SONACOS partenaires',ori:'KWS ou SESVanderHave',rav:'Nématodes',mal:'Rhizomanie (tolérante)',trt:'Fongicides',sol:'Limoneux profonds',notes:'Rendement sucre élevé, tolérance rhizomanie'  },
+  {v:'Arabella',ar:'عربيلا',c:'Betterave',roi:5,rdt:'80-110 t/ha',ca:54000,eau:0,n:0,altMin:0,altMax:500,pluvMin:0,hf:0,gel:'Modérée',sec:'Faible',prix:'0,5-0,8',pep:'SESVanderHave Maroc',ori:'SESVanderHave',rav:'Pucerons',mal:'Cercosporiose',trt:'Fongicides',sol:'Limoneux-argileux',notes:'Production intensive, bon rendement sucre'  },
+  {v:'Evita',ar:'إيفيتا',c:'Betterave',roi:5,rdt:'70-100 t/ha',ca:50000,eau:0,n:0,altMin:0,altMax:500,pluvMin:0,hf:0,gel:'Modérée',sec:'Faible',prix:'0,5-0,8',pep:'SESVanderHave',ori:'SESVanderHave',rav:'Nématodes',mal:'Rhizomanie (tolérante)',trt:'Variétés tolérantes',sol:'Limoneux',notes:'Tolérance rhizomanie, bon rendement'  },
+  {v:'Fidelia KWS',ar:'فيديليا',c:'Betterave',roi:5,rdt:'80-110 t/ha',ca:54000,eau:0,n:0,altMin:0,altMax:500,pluvMin:0,hf:0,gel:'Modérée',sec:'Faible',prix:'0,5-0,8',pep:'KWS Maroc',ori:'KWS',rav:'Pucerons',mal:'Cercosporiose',trt:'Fongicides',sol:'Limoneux profonds',notes:'Qualité sucre exceptionnelle'  },
+  {v:'NK Ferti',ar:'نك فيرتي',c:'Tournesol',roi:5,rdt:'25-35 q/ha sec; 35-45 q/ha irrigué',ca:16000,eau:0,n:0,altMin:0,altMax:800,pluvMin:0,hf:0,gel:'Modérée',sec:'Modérée',prix:'4-6',pep:'Syngenta Maroc',ori:'Syngenta (NK hybride linoléique)',rav:'Sésamie, doryphore, charançon',mal:'Sclerotinia, orobanche (tolérante), mildiou',trt:'Herbicides + insecticides ciblés; rotation',sol:'Limoneux à sableux, sols moyens, bien drainés',notes:'Hybride linoléique performant Gharb/Doukkala; tolérance orobanche'  },
+  {v:'ES Bella',ar:'إيس بيلا',c:'Tournesol',roi:5,rdt:'28-38 q/ha',ca:19000,eau:0,n:0,altMin:0,altMax:800,pluvMin:0,hf:0,gel:'Modérée',sec:'Bonne',prix:'5-7 (oléique)',pep:'Euralis Maroc',ori:'Euralis (ES hybride oléique)',rav:'Charançon',mal:'Orobanche (tolérante), mildiou',trt:'Herbicides spécifiques',sol:'Sols moyens à légers',notes:'Oléique premium, tolérance orobanche'  },
+  {v:'Prodisol',ar:'برويديسول',c:'Tournesol',roi:5,rdt:'25-35 q/ha',ca:16000,eau:0,n:0,altMin:0,altMax:800,pluvMin:0,hf:0,gel:'Modérée',sec:'Modérée',prix:'4-6',pep:'Prodisol Maroc',ori:'Prodisol hybride linoléique',rav:'Sésamie',mal:'Mildiou',trt:'Rotation',sol:'Sols moyens',notes:'Linoléique standard performant'  },
+  {v:'Heliasol',ar:'هيلياسول',c:'Tournesol',roi:5,rdt:'28-38 q/ha',ca:18000,eau:0,n:0,altMin:0,altMax:800,pluvMin:0,hf:0,gel:'Modérée',sec:'Modérée',prix:'4-6',pep:'Heliasol Maroc',ori:'Heliasol hybride (Syngenta?)',rav:'Charançon',mal:'Orobanche',trt:'Herbicides',sol:'Sols moyens',notes:'Bonne tolérance maladies'  },
+  {v:'Sunflora',ar:'سونفلورا',c:'Tournesol',roi:5,rdt:'26-36 q/ha',ca:17500,eau:0,n:0,altMin:0,altMax:800,pluvMin:0,hf:0,gel:'Modérée',sec:'Bonne',prix:'5-7',pep:'Sunflora Maroc',ori:'Sunflora hybride',rav:'Doryphore',mal:'Mildiou',trt:'Rotation',sol:'Sols légers à moyens',notes:'Oléique vigoureux'  },
+  {v:'Akerray',ar:'أكراي',c:'Arganier',roi:5,rdt:'8-15 t fruits secs; 2-4 t huile/ha',ca:0,eau:0,n:0,altMin:50,altMax:800,pluvMin:0,hf:0,gel:'Bonne (-5°C)',sec:'Excellente (adulte)',prix:'3-5 (fruits secs); huile 200-300 DH/l',pep:'Pépinières Eaux & Forêts Tiznit',ori:'Maroc (Souss, Tiznit)',rav:'Coquerelles, charançons, tipules',mal:'Armillaria, Phytophthora (drainage clé)',trt:'Rotation + drainage; lutte mécanique',sol:'Calcaires pauvres, sableux-limoneux, très bien drainés',notes:'Rendement huile élevé; Tiznit; irrigation 16-36 L/plant/mois reprise'  },
+  {v:'Ifsane',ar:'إيفسان',c:'Arganier',roi:10,rdt:'10-18 t fruits',ca:50000,eau:0,n:0,altMin:100,altMax:700,pluvMin:0,hf:0,gel:'Bonne',sec:'Excellente',prix:'3-5',pep:'Taroudant',ori:'Maroc (Ifsane, Taroudant)',rav:'Tipules',mal:'Phytophthora',trt:'Drainage',sol:'Calcaires, limoneux pauvres',notes:'Huile premium qualité cosmétique'  },
+  {v:'Tizgui',ar:'تيزغي',c:'Arganier',roi:12,rdt:'12-20 t fruits',ca:60000,eau:0,n:0,altMin:300,altMax:1000,pluvMin:0,hf:0,gel:'Excellente',sec:'Exceptionnelle',prix:'3-5',pep:'Tafraout',ori:'Maroc (Tafraout, Anti-Atlas)',rav:'Coquerelles',mal:'Armillaria',trt:'Préventif drainage',sol:'Roches calcaires, sols pauvres',notes:'Tafraout Anti-Atlas, très rustique'  },
+  {v:'Tafraout',ar:'تافراوت',c:'Arganier',roi:15,rdt:'15-25 t fruits',ca:75000,eau:0,n:0,altMin:400,altMax:1200,pluvMin:0,hf:0,gel:'Excellente',sec:'Exceptionnelle',prix:'3-5',pep:'Tafraout',ori:'Maroc (Tafraout, Anti-Atlas)',rav:'Charançons',mal:'Phytophthora',trt:'Drainage naturel',sol:'Calcaires rocheux pauvres',notes:'Anti-Atlas haute altitude, très productive'  },
+  {v:'Aït Baha',ar:'آيت باها',c:'Arganier',roi:10,rdt:'12-20 t fruits',ca:60000,eau:0,n:0,altMin:100,altMax:600,pluvMin:0,hf:0,gel:'Bonne',sec:'Excellente',prix:'3-5',pep:'Aït Baha/Taroudant',ori:'Maroc (Aït Baha, Taroudant)',rav:'Coquerelles',mal:'Armillaria',trt:'Drainage',sol:'Limoneux-calcaires',notes:'Productivité élevée Aït Baha'  },
+  {v:'Larnaka',ar:'لارناكا',c:'Pistachier',roi:10,rdt:'4-7 t/ha',ca:240000,eau:0,n:0,altMin:100,altMax:700,pluvMin:0,hf:0,gel:'Excellente',sec:'Excellente',prix:'40-80',pep:'SONACOS',ori:'Chypre',rav:'Tétranyque',mal:'Phytophthora',trt:'Drainage',sol:'Calcaires',notes:'Précoce, bonne productivité'  },
+  {v:'Sirora',ar:'سيورا',c:'Pistachier',roi:10,rdt:'4-7 t/ha',ca:260000,eau:0,n:0,altMin:100,altMax:700,pluvMin:0,hf:0,gel:'Excellente',sec:'Bonne',prix:'45-85',pep:'Import Australie/Maroc',ori:'Australie',rav:'Pucerons',mal:'Alternaria',trt:'Standard',sol:'Tous drainés',notes:'Précoce vigoureuse, bonne taille'  }
+];
+
+let selCulture = null;
+let selRegion = null;
+
+let selFam = 'Tous';
+const FAM_LABELS = {
+  fr: { 'Tous':'Toutes', 'Arboriculture':'Arboriculture', 'Maraîchage':'Maraîchage', 'Céréale':'Céréales', 'Industrielle':'Industrielles', 'Spéciale':'Spéciales' },
+  ar: { 'Tous':'الكل', 'Arboriculture':'الأشجار', 'Maraîchage':'الخضروات', 'Céréale':'الحبوب', 'Industrielle':'الصناعية', 'Spéciale':'خاصة' }
+};
+const FAMILIES = ['Tous','Arboriculture','Maraîchage','Céréale','Industrielle','Spéciale'];
+
+function renderFamFilters(){
+  const c = document.getElementById('famFilters');
+  if(!c) return;
+  c.innerHTML = FAMILIES.map(f=>`
+    <button class="fam-btn${selFam===f?' active':''}" onclick="setFam('${f}')">${FAM_LABELS[lang][f]||f}</button>
+  `).join('');
+}
+function setFam(f){ selFam=f; renderFamFilters(); renderCultures(); }
+
+function renderCultures(){
+  const g = document.getElementById('cultureGrid');
+  const list = selFam==='Tous' ? CULTURES : CULTURES.filter(c=>c.fam===selFam);
+  g.innerHTML = list.map(c=>`
+    <div class="culture-btn${selCulture===c.id?' selected':''}" onclick="selectCulture('${c.id}')">
+      <div class="icon">${c.icon}</div>
+      <div class="name">${lang==='ar'?c.ar:c.fr}</div>
+    </div>
+  `).join('');
+}
+
+function selectCulture(id){
+  selCulture = id; selRegion = null;
+  renderCultures();
+  document.getElementById('step2').style.opacity = '1';
+  document.getElementById('step2').style.pointerEvents = 'auto';
+  document.getElementById('s1num').className = 'step-num done';
+  renderRegions();
+  document.getElementById('step2').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function renderRegions(){
+  const g = document.getElementById('regionGrid');
+  g.innerHTML = REGIONS.map(r=>{
+    const compat = regionCompat(r);
+    const border = compat>=80 ? 'var(--accent)' : compat>=50 ? 'var(--accent2)' : 'var(--warn)';
+    return `
+    <div class="region-btn${selRegion===r.id?' selected':''}" onclick="selectRegion('${r.id}')" style="${selRegion===r.id?'border-color:'+border:''}">
+      <div class="r-name">${lang==='ar'?r.ar:r.fr}</div>
+      <div class="r-alt">${r.alt}m · ${r.pluv}mm</div>
+      <div class="r-clim">${lang==='ar'?r.clim_ar:r.clim_fr}</div>
+    </div>`;
+  }).join('');
+}
+
+function regionCompat(r){
+  if(!selCulture) return 50;
+  const c = CULTURES.find(x=>x.id===selCulture);
+  if(!c) return 50;
+  let score = 100;
+  if(r.alt < c.minAlt) score -= 30;
+  if(r.alt > c.maxAlt) score -= 30;
+  if(r.pluv < c.minPluv) score -= 25;
+  if(r.hf < c.minHF) score -= 25;
+  return Math.max(0,score);
+}
+
+function selectRegion(id){
+  selRegion = id;
+  renderRegions();
+  document.getElementById('step3').style.opacity = '1';
+  document.getElementById('step3').style.pointerEvents = 'auto';
+  document.getElementById('s2num').className = 'step-num done';
+  document.getElementById('step3').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function runSearch(){
+  if(!selCulture || !selRegion) return;
+  const region = REGIONS.find(r=>r.id===selRegion);
+  const altInput = parseFloat(document.getElementById('fAlt').value) || region.alt;
+  const pluvInput = parseFloat(document.getElementById('fPluv').value) || region.pluv;
+  const roiMax = parseInt(document.getElementById('fROI').value) || 99;
+
+  let results = VARIETIES_DATA.filter(v=>{
+    if(v.c !== selCulture) return false;
+    const aMax = v.altMax > 0 ? v.altMax : 3000;
+    if(altInput < v.altMin || altInput > aMax) return false;
+    if(v.pluvMin > 0 && pluvInput < v.pluvMin * 0.5) return false; // soft: irrigation compense
+    if(v.roi > roiMax) return false;
+    return true;
+  });
+
+  results = results.map(v=>{
+    let score = 100;
+    const altMid = (v.altMin+v.altMax)/2;
+    score -= Math.abs(altInput-altMid)/altMid*20;
+    if(pluvInput > v.pluvMin+200) score += 5;
+    score -= (v.roi-1)*3;
+    return {...v, score:Math.round(score)};
+  }).sort((a,b)=>b.score-a.score);
+
+  document.getElementById('loader').style.display='block';
+  document.getElementById('results').style.display='none';
+  setTimeout(()=>{
+    document.getElementById('loader').style.display='none';
+    displayResults(results, region);
+  }, 600);
+}
+
+function displayResults(results, region){
+  const el = document.getElementById('results');
+  el.style.display='block';
+  document.getElementById('resCount').textContent = results.length;
+  const list = document.getElementById('resultsList');
+
+  if(results.length===0){
+    list.innerHTML = `<div class="empty"><div class="icon">🌿</div><div>${t('no_result')}</div></div>`;
+    el.scrollIntoView({behavior:'smooth'});
+    return;
+  }
+
+  list.innerHTML = results.map((v,i)=>{
+    const gelTag = gelColor(v.gel);
+    const secTag = secColor(v.sec);
+    const pepTag = pepColor(v.pep);
+    const compat = variantCompat(v, region);
+    const compatColor = compat>=80 ? 'var(--accent)' : compat>=50 ? 'var(--accent2)' : 'var(--warn)';
+    return `
+    <div class="variety-card" id="vc_${i}" onclick="toggleCard(${i})">
+      <div class="vc-head">
+        <div>
+          <div class="vc-name">${lang==='ar'?v.ar:v.v}</div>
+          <div class="vc-ar">${lang==='ar'?v.v:v.ar}</div>
+          <div class="vc-tags">
+            <span class="tag tag-green">🌾 ${v.rdt} T/ha</span>
+            <span class="tag tag-blue">💧 ${v.eau.toLocaleString()} m³</span>
+            <span class="tag ${gelTag}">🌡️ ${t('lbl_gel')}: ${v.gel}</span>
+            <span class="tag ${secTag}">☀️ ${t('lbl_sec')}: ${v.sec}</span>
+            <span class="tag ${pepTag}">🌿 ${v.pep}</span>
+          </div>
+        </div>
+        <div style="text-align:end;flex-shrink:0">
+          <div class="vc-roi">${v.roi} ans</div>
+          <div class="vc-roi-label">ROI</div>
+        </div>
+      </div>
+      <div class="compat-bar-wrap">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px">
+          <span style="font-size:11px;color:var(--text2)">${t('compat_title')}</span>
+          <span style="font-size:12px;font-weight:700;color:${compatColor}">${compat}%</span>
+        </div>
+        <div class="compat-bar">
+          <div class="compat-fill" style="width:${compat}%;background:${compatColor}"></div>
+        </div>
+      </div>
+      <div class="vc-detail">
+        <div class="detail-grid">
+          <div class="dg-item"><div class="dg-label">${t('lbl_ca')}</div><div class="dg-value green">${(v.ca/1000).toFixed(0)}K DH</div></div>
+          <div class="dg-item"><div class="dg-label">${t('lbl_rdt')}</div><div class="dg-value">${v.rdt} T/ha</div></div>
+          <div class="dg-item"><div class="dg-label">${t('lbl_prix')}</div><div class="dg-value blue">${v.prix} DH/kg</div></div>
+          <div class="dg-item"><div class="dg-label">${t('lbl_eau')}</div><div class="dg-value">${v.eau.toLocaleString()} m³/ha</div></div>
+          <div class="dg-item"><div class="dg-label">${t('lbl_azote')}</div><div class="dg-value">${v.n} kg N/ha</div></div>
+          <div class="dg-item"><div class="dg-label">${t('lbl_alt')}</div><div class="dg-value">${v.altMin}–${v.altMax} m</div></div>
+          <div class="dg-item"><div class="dg-label">${t('lbl_heuresfroid')}</div><div class="dg-value">${v.hf} h</div></div>
+          <div class="dg-item"><div class="dg-label">${t('lbl_pleine')}</div><div class="dg-value">${v.roi+2} ans</div></div>
+          <div class="dg-item"><div class="dg-label">${t('lbl_origine')}</div><div class="dg-value" style="font-size:12px">${v.ori}</div></div>
+        </div>
+        <div class="section-label" style="margin-top:14px">🌱 ${t('lbl_sol')}</div>
+        <div style="font-size:13px;color:var(--text)">${v.sol}</div>
+        <div class="section-label">🐛 ${t('lbl_rav')}</div>
+        <div style="font-size:13px;color:var(--text)">${v.rav}</div>
+        <div class="section-label">🍂 ${t('lbl_mal')}</div>
+        <div style="font-size:13px;color:var(--text)">${v.mal}</div>
+        <div class="section-label">💊 ${t('lbl_trt')}</div>
+        <div style="font-size:13px;color:var(--text)">${v.trt}</div>
+        <div class="section-label">🌿 ${t('lbl_conduite')}</div>
+        <div style="font-size:13px;color:var(--text)">${v.conduite}</div>
+        <div class="section-label">📝 ${t('lbl_notes')}</div>
+        <div style="font-size:13px;color:var(--text2);font-style:italic">${v.notes}</div>
+      </div>
+    </div>`;
+  }).join('');
+  el.scrollIntoView({behavior:'smooth'});
+}
+
+function toggleCard(i){
+  document.getElementById('vc_'+i).classList.toggle('expanded');
+}
+
+function variantCompat(v, r){
+  let s = 100;
+  if(r.alt < v.altMin) s -= 35;
+  else if(r.alt > v.altMax) s -= 35;
+  else { const range = v.altMax-v.altMin||1; s -= Math.abs((r.alt-v.altMin)/range-0.5)*10; }
+  if(r.pluv < v.pluvMin) s -= 25;
+  if(r.hf < v.hf) s -= 20;
+  return Math.max(0, Math.min(100, Math.round(s)));
+}
+
+function gelColor(g){ return g==='Faible'?'tag-green':g==='Modérée'?'tag-warn':'tag-danger'; }
+function secColor(s){ return s==='Élevée'?'tag-green':s==='Modérée'?'tag-warn':'tag-danger'; }
+function pepColor(p){ return p==='Large'?'tag-green':p==='Limitée'?'tag-warn':'tag-danger'; }
+
+function resetAll(){
+  selCulture=null; selRegion=null;
+  document.getElementById('fAlt').value='';
+  document.getElementById('fPluv').value='';
+  document.getElementById('fROI').value='';
+  renderCultures(); renderRegions();
+  document.getElementById('step2').style.opacity='0.4';
+  document.getElementById('step2').style.pointerEvents='none';
+  document.getElementById('step3').style.opacity='0.4';
+  document.getElementById('step3').style.pointerEvents='none';
+  document.getElementById('results').style.display='none';
+  document.getElementById('s1num').className='step-num';
+  document.getElementById('s2num').className='step-num';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+document.getElementById('btnTheme').textContent = theme==='dark' ? '☀️' : '🌙';
+applyLang();
+renderCultures();
+renderRegions();
+</script>
 </body>
 </html>
