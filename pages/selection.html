@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="fr" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OrAgri — Modules</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,ital,wght@9..144,0,400;9..144,0,500;9..144,0,600;9..144,1,400;9..144,1,500&family=Inter:wght@400;500;600;700&family=Noto+Kufi+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#F5F0E6; --surface:#FBF7EF; --surface2:#EFE8DB;
+    --ink:#1C2A22; --ink-2:#55655A;
+    --line:#DDD3BE; --line-strong:#C7B99A;
+    --forest:#24402F; --forest-hover:#2E5340;
+    --olive:#6B7F4A; --terracotta:#B45A3C; --amber:#B58412;
+    --radius:4px; --radius-lg:8px;
+  }
+  [data-theme="dark"]{
+    --bg:#12160F; --surface:#1A1F17; --surface2:#232A20;
+    --ink:#ECE4D2; --ink-2:#9BA394;
+    --line:#2E3529; --line-strong:#3F4838;
+    --forest:#C8DBB6; --forest-hover:#B0C79A;
+    --olive:#A9BE7C; --terracotta:#E08B6E; --amber:#E1B657;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--bg);color:var(--ink)}
+  body{font-family:'Inter',system-ui,-apple-system,sans-serif;font-size:15px;line-height:1.55;min-height:100vh;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;transition:background .3s,color .3s}
+  body[dir="rtl"]{font-family:'Noto Kufi Arabic','Inter',system-ui,sans-serif}
+  .serif{font-family:'Fraunces','Times New Roman',serif;font-optical-sizing:auto;letter-spacing:-0.01em}
+
+  .topbar{display:flex;align-items:center;justify-content:space-between;padding:18px 32px;border-bottom:1px solid var(--line);background:var(--bg);position:sticky;top:0;z-index:100}
+  .brand{display:flex;align-items:baseline;gap:10px}
+  .brand-mark{font-family:'Fraunces',serif;font-weight:600;font-size:22px;letter-spacing:-0.02em;color:var(--ink)}
+  .brand-mark em{font-style:italic;color:var(--olive);font-weight:500}
+  .brand-sub{font-size:11px;color:var(--ink-2);text-transform:uppercase;letter-spacing:0.18em}
+  .top-actions{display:flex;gap:8px;align-items:center}
+  .icon-btn{background:transparent;border:1px solid var(--line);color:var(--ink);padding:7px 14px;border-radius:999px;cursor:pointer;font-size:12px;font-weight:500;letter-spacing:0.02em;font-family:inherit;transition:all .18s}
+  .icon-btn:hover{border-color:var(--ink);background:var(--surface)}
+  .lang-switch{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden}
+  .lang-switch button{border:0;background:transparent;padding:7px 14px;font-size:12px;font-weight:600;color:var(--ink-2);cursor:pointer;font-family:inherit;letter-spacing:.04em}
+  .lang-switch button.active{background:var(--ink);color:var(--bg)}
+
+  .hero{padding:80px 32px 32px;max-width:1120px;margin:0 auto}
+  .eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:0.22em;color:var(--olive);font-weight:600;margin-bottom:20px;display:inline-flex;align-items:center;gap:10px}
+  .eyebrow::before{content:"";width:24px;height:1px;background:var(--olive)}
+  .hero h1{font-family:'Fraunces',serif;font-weight:400;font-size:clamp(36px,6vw,64px);line-height:1.02;letter-spacing:-0.025em;color:var(--ink);max-width:820px}
+  .hero h1 em{font-style:italic;color:var(--olive);font-weight:400}
+  .hero p{margin-top:20px;max-width:620px;color:var(--ink-2);font-size:16px;line-height:1.6}
+
+  .main{max-width:1120px;margin:0 auto;padding:48px 32px 96px}
+  .section-label{display:flex;align-items:baseline;justify-content:space-between;border-top:1px solid var(--line);padding-top:24px;margin-bottom:28px}
+  .section-label .num{font-family:'Fraunces',serif;font-size:14px;color:var(--olive);letter-spacing:.08em}
+  .section-label .name{font-family:'Fraunces',serif;font-size:18px;color:var(--ink)}
+  .section-label .count{font-size:11px;text-transform:uppercase;letter-spacing:.2em;color:var(--ink-2)}
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--radius-lg);overflow:hidden}
+  .mod{position:relative;background:var(--surface);padding:36px 28px 28px;min-height:260px;display:flex;flex-direction:column;justify-content:space-between;cursor:pointer;transition:background .2s,transform .2s}
+  .mod:hover{background:var(--surface2)}
+  .mod .idx{font-family:'Fraunces',serif;font-size:12px;color:var(--olive);letter-spacing:.14em;text-transform:uppercase}
+  .mod .title{font-family:'Fraunces',serif;font-weight:400;font-size:34px;line-height:1.05;letter-spacing:-.02em;color:var(--ink);margin-top:24px}
+  .mod .title em{font-style:italic;color:var(--olive)}
+  .mod .desc{margin-top:14px;color:var(--ink-2);font-size:13.5px;line-height:1.55;max-width:32ch}
+  .mod .foot{margin-top:24px;display:flex;align-items:center;justify-content:space-between;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-2)}
+  .mod .arrow{font-family:'Fraunces',serif;font-size:22px;color:var(--forest);transition:transform .2s}
+  .mod:hover .arrow{transform:translateX(4px)}
+  body[dir="rtl"] .mod:hover .arrow{transform:translateX(-4px)}
+
+  .mod.active{background:var(--forest);color:var(--bg)}
+  .mod.active .idx,.mod.active .title,.mod.active .desc,.mod.active .foot{color:var(--bg)}
+  .mod.active .title em{color:#E9D9A6}
+  .mod.active .arrow{color:var(--bg)}
+  .mod.active:hover{background:var(--forest-hover)}
+
+  .mod.soon{cursor:default;background:var(--surface)}
+  .mod.soon:hover{background:var(--surface)}
+  .mod.soon .title{color:var(--ink-2)}
+  .mod.soon .desc{color:var(--ink-2);opacity:.75}
+  .mod.soon .arrow{display:none}
+  .mod .badge{display:none;font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--terracotta);border:1px solid var(--terracotta);padding:4px 10px;border-radius:999px;font-weight:600}
+  .mod.soon .badge{display:inline-block}
+
+  footer{max-width:1120px;margin:0 auto;padding:24px 32px 48px;border-top:1px solid var(--line);color:var(--ink-2);font-size:12px;display:flex;justify-content:space-between;letter-spacing:.04em}
+</style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark">Or<em>Agri</em></div>
+      <div class="brand-sub" data-fr="Plateforme agricole" data-ar="منصة زراعية">Plateforme agricole</div>
+    </div>
+    <div class="top-actions">
+      <div class="lang-switch" role="group" aria-label="Language">
+        <button class="active" data-lang="fr">FR</button>
+        <button data-lang="ar">عربية</button>
+      </div>
+      <button class="icon-btn" id="themeBtn" aria-label="Theme">☾</button>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="eyebrow" data-fr="Modules" data-ar="الوحدات">Modules</div>
+    <h1 class="serif" data-fr-html="Choisissez votre <em>domaine</em> de travail." data-ar-html="اختر <em>مجال</em> عملك.">Choisissez votre <em>domaine</em> de travail.</h1>
+    <p data-fr="Cinq modules pour piloter votre exploitation. Un seul est ouvert aujourd'hui — les autres arrivent bientôt." data-ar="خمس وحدات لإدارة استغلالك. واحدة فقط متاحة اليوم، والباقي قريباً.">
+      Cinq modules pour piloter votre exploitation. Un seul est ouvert aujourd'hui — les autres arrivent bientôt.
+    </p>
+  </section>
+
+  <main class="main">
+    <div class="section-label">
+      <div style="display:flex;gap:20px;align-items:baseline">
+        <span class="num">01</span>
+        <span class="name serif" data-fr="Sélectionnez un module" data-ar="اختر وحدة">Sélectionnez un module</span>
+      </div>
+      <span class="count"><span data-fr="1 sur 5 disponible" data-ar="1 من 5 متاح">1 sur 5 disponible</span></span>
+    </div>
+
+    <div class="grid">
+      <article class="mod soon" data-module="economie">
+        <div>
+          <div class="idx">I</div>
+          <h3 class="title" data-fr="Économie" data-ar="الاقتصاد">Économie</h3>
+          <p class="desc" data-fr="Coûts, marges et rentabilité par parcelle." data-ar="التكاليف والهوامش والربحية لكل قطعة.">Coûts, marges et rentabilité par parcelle.</p>
+        </div>
+        <div class="foot"><span class="badge" data-fr="Bientôt" data-ar="قريباً">Bientôt</span><span class="arrow">→</span></div>
+      </article>
+
+      <article class="mod active" data-module="culture" data-href="/oragri.html">
+        <div>
+          <div class="idx">II</div>
+          <h3 class="title" data-fr-html="<em>Culture</em>" data-ar-html="<em>المزروعات</em>"><em>Culture</em></h3>
+          <p class="desc" data-fr="Choisissez région, culture et variété adaptée au Maroc." data-ar="اختر المنطقة والمحصول والصنف المناسب للمغرب.">Choisissez région, culture et variété adaptée au Maroc.</p>
+        </div>
+        <div class="foot"><span data-fr="Ouvrir" data-ar="فتح">Ouvrir</span><span class="arrow">→</span></div>
+      </article>
+
+      <article class="mod soon" data-module="irrigation">
+        <div>
+          <div class="idx">III</div>
+          <h3 class="title" data-fr="Irrigation" data-ar="السقي">Irrigation</h3>
+          <p class="desc" data-fr="Besoins en eau, planning et pilotage des apports." data-ar="احتياجات الماء وجدولة السقي.">Besoins en eau, planning et pilotage des apports.</p>
+        </div>
+        <div class="foot"><span class="badge" data-fr="Bientôt" data-ar="قريباً">Bientôt</span><span class="arrow">→</span></div>
+      </article>
+
+      <article class="mod soon" data-module="fertilisation">
+        <div>
+          <div class="idx">IV</div>
+          <h3 class="title" data-fr="Fertilisation" data-ar="التسميد">Fertilisation</h3>
+          <p class="desc" data-fr="Plans de fumure NPK et amendements du sol." data-ar="خطط التسميد NPK وتحسين التربة.">Plans de fumure NPK et amendements du sol.</p>
+        </div>
+        <div class="foot"><span class="badge" data-fr="Bientôt" data-ar="قريباً">Bientôt</span><span class="arrow">→</span></div>
+      </article>
+
+      <article class="mod soon" data-module="traitement">
+        <div>
+          <div class="idx">V</div>
+          <h3 class="title" data-fr-html="Traitement <em>phyto</em>" data-ar-html="معالجة <em>الآفات</em>">Traitement <em>phyto</em></h3>
+          <p class="desc" data-fr="Ravageurs, maladies et calendriers de traitement." data-ar="الآفات والأمراض وجدولة المعالجة.">Ravageurs, maladies et calendriers de traitement.</p>
+        </div>
+        <div class="foot"><span class="badge" data-fr="Bientôt" data-ar="قريباً">Bientôt</span><span class="arrow">→</span></div>
+      </article>
+    </div>
+  </main>
+
+  <footer>
+    <span data-fr="© OrAgri — Aide à la décision agricole" data-ar="© أوراغري — دعم القرار الفلاحي">© OrAgri — Aide à la décision agricole</span>
+    <span data-fr="Maroc" data-ar="المغرب">Maroc</span>
+  </footer>
+
+<script>
+  const langBtns = document.querySelectorAll('.lang-switch button');
+  function applyLang(lang){
+    document.documentElement.lang = lang;
+    document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+    document.body.dir = lang === 'ar' ? 'rtl' : 'ltr';
+    document.querySelectorAll('[data-fr]').forEach(el=>{ el.textContent = lang==='ar' ? el.dataset.ar : el.dataset.fr; });
+    document.querySelectorAll('[data-fr-html]').forEach(el=>{ el.innerHTML = lang==='ar' ? el.dataset.arHtml : el.dataset.frHtml; });
+    langBtns.forEach(b=>b.classList.toggle('active', b.dataset.lang===lang));
+    localStorage.setItem('oragri-lang', lang);
+  }
+  langBtns.forEach(b=>b.addEventListener('click',()=>applyLang(b.dataset.lang)));
+
+  const themeBtn = document.getElementById('themeBtn');
+  function applyTheme(t){
+    document.documentElement.dataset.theme = t;
+    themeBtn.textContent = t==='dark' ? '☀' : '☾';
+    localStorage.setItem('oragri-theme', t);
+  }
+  themeBtn.addEventListener('click',()=>applyTheme(document.documentElement.dataset.theme==='dark'?'light':'dark'));
+
+  document.querySelectorAll('.mod:not(.soon)').forEach(card=>{
+    card.addEventListener('click',()=>{ const h = card.dataset.href; if(h) window.location.href = h; });
+  });
+
+  applyLang(localStorage.getItem('oragri-lang') || 'fr');
+  applyTheme(localStorage.getItem('oragri-theme') || 'light');
+</script>
+</body>
+</html>
